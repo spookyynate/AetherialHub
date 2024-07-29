@@ -2216,6 +2216,62 @@ local function Update()
 			end
 		end
 	end
+
+	local CX = Menu:GetInstance'CrosshairX';
+	local CY = Menu:GetInstance'CrosshairY';
+	
+	if Options.Crosshair.Value then
+		CX.Visible = true;
+		CY.Visible = true;
+
+		CX.To = V2New((Camera.ViewportSize.X / 2) - 8, (Camera.ViewportSize.Y / 2));
+		CX.From = V2New((Camera.ViewportSize.X / 2) + 8, (Camera.ViewportSize.Y / 2));
+		CY.To = V2New((Camera.ViewportSize.X / 2), (Camera.ViewportSize.Y / 2) - 8);
+		CY.From = V2New((Camera.ViewportSize.X / 2), (Camera.ViewportSize.Y / 2) + 8);
+	else
+		CX.Visible = false;
+		CY.Visible = false;
+	end
+
+	if Options.MenuOpen.Value and MenuLoaded then
+		local MLocation = GetMouseLocation();
+		shared.MenuDrawingData.Instances.Main.Color = Color3.fromHSV(tick() * 24 % 255/255, 1, 1);
+		local MainInstance = Menu:GetInstance'Main';
+		
+		local Values = {
+			MainInstance.Position.X;
+			MainInstance.Position.Y;
+			MainInstance.Position.X + MainInstance.Size.X;
+			MainInstance.Position.Y + MainInstance.Size.Y;
+		};
+		
+		if MainInstance and (MouseHoveringOver(Values) or (SubMenu.Open and MouseHoveringOver(SubMenu.Bounds))) then
+			Debounce.CursorVis = true;
+			
+			Menu:UpdateMenuInstance'Cursor1'{
+				Visible	= true;
+				From	= V2New(MLocation.x, MLocation.y);
+				To		= V2New(MLocation.x + 5, MLocation.y + 6);
+			}
+			Menu:UpdateMenuInstance'Cursor2'{
+				Visible	= true;
+				From	= V2New(MLocation.x, MLocation.y);
+				To		= V2New(MLocation.x, MLocation.y + 8);
+			}
+			Menu:UpdateMenuInstance'Cursor3'{
+				Visible	= true;
+				From	= V2New(MLocation.x, MLocation.y + 6);
+				To		= V2New(MLocation.x + 5, MLocation.y + 5);
+			}
+		else
+			if Debounce.CursorVis then
+				Debounce.CursorVis = false;
+				
+				Menu:UpdateMenuInstance'Cursor1'{Visible = false};
+				Menu:UpdateMenuInstance'Cursor2'{Visible = false};
+				Menu:UpdateMenuInstance'Cursor3'{Visible = false};
+			end
+		end
 		if MouseHeld then
 			local MousePos = GetMouseLocation();
 
