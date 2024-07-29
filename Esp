@@ -660,15 +660,13 @@ function Load()
 Options('Enabled', 'ESP Enabled', true);
 Options('ShowName', 'Show Names', true);
 Options('ShowDistance', 'Show Distance', true);
-Options('ShowHealth', 'Show Health', true);
-Options('ShowBoxes', 'Show Boxes', true);
+Options('ShowHealth', 'Shitty Health', true);
+Options('ShowBoxes', 'Shitty Box ESP', true);
 Options('ShowTracers', 'Show Tracers', true);
-Options('ShowDot', 'Show Head Dot', false);
 Options('VisCheck', 'Visibility Check', false);
 Options('Crosshair', 'Crosshair', false);
 Options('TextOutline', 'Text Outline', true);
 -- Options('Rainbow', 'Rainbow Mode', false);
-Options('TextSize', 'Text Size', syn and 18 or 14, 10, 24); -- cuz synapse fonts look weird???
 Options('MaxDistance', 'Max Distance', 2500, 100, 25000);
 Options('RefreshRate', 'Refresh Rate (ms)', 5, 1, 200);
 Options('YOffset', 'Y Offset', 0, -200, 200);
@@ -691,7 +689,6 @@ Options('ChangeColors', SENTINEL_LOADED and 'Sentinel Unsupported' or 'Change Co
 				ColorPicker.ColorChanged:Connect(function(Color) Circ.Color = Color EnemyColor = Color Options.EnemyColor = Color end);
 			end
 		};
-		{
 		{
 			Type = 'Button'; Text = 'Rainbow Mode';
 
@@ -1432,19 +1429,6 @@ function CreateMenu(NewPosition) -- Create Menu
 
 	BasePosition = V2New(math.clamp(BasePosition.X, 0, Camera.ViewportSize.X), math.clamp(BasePosition.Y, 0, Camera.ViewportSize.Y));
 
-	Menu:AddMenuInstance('CrosshairX', 'Line', {
-		Visible			= false;
-		Color			= Color3.new(0, 1, 0);
-		Transparency	= 1;
-		Thickness		= 1;
-	});
-	Menu:AddMenuInstance('CrosshairY', 'Line', {
-		Visible			= false;
-		Color			= Color3.new(0, 1, 0);
-		Transparency	= 1;
-		Thickness		= 1;
-	});
-
 	delay(.025, function() -- since zindex doesnt exist
 		Menu:AddMenuInstance('Main', 'Square', {
 			Size		= BaseSize;
@@ -2030,18 +2014,6 @@ local function UpdatePlayerData()
 					Transparency	= 1;
 					Thickness		= 2;
 				}
-				Data.Instances['NameTag'] = Data.Instances['NameTag'] or NewDrawing'Text'{
-					Size			= Options.TextSize.Value;
-					Center			= true;
-					Outline			= Options.TextOutline.Value;
-					Visible			= true;
-				};
-				Data.Instances['DistanceTag'] = Data.Instances['DistanceTag'] or NewDrawing'Text'{
-					Size			= Options.TextSize.Value - 1;
-					Center			= true;
-					Outline			= Options.TextOutline.Value;
-					Visible			= true;
-				};
 
 				local NameTag		= Data.Instances['NameTag'];
 				local DistanceTag	= Data.Instances['DistanceTag'];
@@ -2081,29 +2053,9 @@ local function UpdatePlayerData()
 					if ScreenPosition.Z > 0 then
 						local ScreenPositionUpper = ScreenPosition;
 						
-						if Options.ShowName.Value then
-							LocalPlayer.NameDisplayDistance = 0;
-							NameTag.Visible		= true;
-							NameTag.Text		= v.Text;
-							NameTag.Size		= Options.TextSize.Value;
-							NameTag.Outline		= Options.TextOutline.Value;
-							NameTag.Position	= V2New(ScreenPositionUpper.X, ScreenPositionUpper.Y);
-							NameTag.Color		= Color;
-							if Drawing.Fonts and shared.am_ic3 then -- CURRENTLY SYNAPSE ONLY :MEGAHOLY:
-								NameTag.Font	= Drawing.Fonts.Monospace;
-							end
-						else
 							LocalPlayer.NameDisplayDistance = 100;
 							NameTag.Visible = false;
 						end
-						if Options.ShowDistance.Value or Options.ShowHealth.Value then
-							DistanceTag.Visible		= true;
-							DistanceTag.Size		= Options.TextSize.Value - 1;
-							DistanceTag.Outline		= Options.TextOutline.Value;
-							DistanceTag.Color		= Color3.new(1, 1, 1);
-							if Drawing.Fonts and shared.am_ic3 then -- CURRENTLY SYNAPSE ONLY :MEGAHOLY:
-								NameTag.Font	= Drawing.Fonts.Monospace;
-							end
 
 							local Str = '';
 
@@ -2120,7 +2072,6 @@ local function UpdatePlayerData()
 						NameTag.Visible			= false;
 						DistanceTag.Visible		= false;
 					end
-				else
 					NameTag.Visible			= false;
 					DistanceTag.Visible		= false;
 					Tracer.Visible			= false;
@@ -2152,20 +2103,6 @@ local function UpdatePlayerData()
 				Filled			= true;
 				NumSides		= 30;
 			}
-			Data.Instances['NameTag'] = Data.Instances['NameTag'] or NewDrawing'Text'{
-				Size			= Options.TextSize.Value;
-				Center			= true;
-				Outline			= Options.TextOutline.Value;
-				OutlineOpacity	= 1;
-				Visible			= true;
-			};
-			Data.Instances['DistanceHealthTag'] = Data.Instances['DistanceHealthTag'] or NewDrawing'Text'{
-				Size			= Options.TextSize.Value - 1;
-				Center			= true;
-				Outline			= Options.TextOutline.Value;
-				OutlineOpacity	= 1;
-				Visible			= true;
-			};
 
 			local NameTag		= Data.Instances['NameTag'];
 			local DistanceTag	= Data.Instances['DistanceHealthTag'];
@@ -2218,31 +2155,8 @@ local function UpdatePlayerData()
 						local ScreenPositionUpper	= WorldToViewport((HumanoidRootPart:GetRenderCFrame() * CFrame.new(0, Head.Size.Y + HumanoidRootPart.Size.Y + (Options.YOffset.Value / 25), 0)).Position);
 						local Scale					= Head.Size.Y / 2;
 
-						if Options.ShowName.Value then
-							NameTag.Visible		= true;
-							NameTag.Text		= v.Name .. (CustomPlayerTag and CustomPlayerTag(v) or '');
-							NameTag.Size		= Options.TextSize.Value;
-							NameTag.Outline		= Options.TextOutline.Value;
-							NameTag.Position	= V2New(ScreenPositionUpper.X, ScreenPositionUpper.Y) - V2New(0, NameTag.TextBounds.Y);
-							NameTag.Color		= Color;
-							NameTag.Color		= Color;
-							NameTag.OutlineColor= Color3.new(0.05, 0.05, 0.05);
-							NameTag.Transparency= 0.85;
-							if Drawing.Fonts and shared.am_ic3 then -- CURRENTLY SYNAPSE ONLY :MEGAHOLY:
-								NameTag.Font	= Drawing.Fonts.Monospace;
-							end
-						else
 							NameTag.Visible = false;
 						end
-						if Options.ShowDistance.Value or Options.ShowHealth.Value then
-							DistanceTag.Visible		= true;
-							DistanceTag.Size		= Options.TextSize.Value - 1;
-							DistanceTag.Outline		= Options.TextOutline.Value;
-							DistanceTag.Color		= Color3.new(1, 1, 1);
-							DistanceTag.Transparency= 0.85;
-							if Drawing.Fonts and shared.am_ic3 then -- CURRENTLY SYNAPSE ONLY :MEGAHOLY:
-								NameTag.Font	= Drawing.Fonts.Monospace;
-							end
 
 							local Str = '';
 
@@ -2267,60 +2181,6 @@ local function UpdatePlayerData()
 						else
 							DistanceTag.Visible = false;
 						end
-						if Options.ShowDot.Value and Vis then
-							local Top			= WorldToViewport((Head.CFrame * CFrame.new(0, Scale, 0)).Position);
-							local Bottom		= WorldToViewport((Head.CFrame * CFrame.new(0, -Scale, 0)).Position);
-							local Radius		= math.abs((Top - Bottom).Y);
-
-							HeadDot.Visible		= true;
-							HeadDot.Color		= Color;
-							HeadDot.Position	= V2New(ScreenPosition.X, ScreenPosition.Y);
-							HeadDot.Radius		= Radius;
-						else
-							HeadDot.Visible = false;
-						end
-						if Options.ShowBoxes.Value and Vis and HumanoidRootPart then
-							local Body = {
-								Head;
-								Character:FindFirstChild'Left Leg' or Character:FindFirstChild'LeftLowerLeg';
-								Character:FindFirstChild'Right Leg' or Character:FindFirstChild'RightLowerLeg';
-								Character:FindFirstChild'Left Arm' or Character:FindFirstChild'LeftLowerArm';
-								Character:FindFirstChild'Right Arm' or Character:FindFirstChild'RightLowerArm';
-							}
-							Box:Update(HumanoidRootPart.CFrame, V3New(2, 3, 1) * (Scale * 2), Color, nil, shared.am_ic3 and Body);
-						else
-							Box:SetVisible(false);
-						end
-					else
-						NameTag.Visible			= false;
-						DistanceTag.Visible		= false;
-						HeadDot.Visible			= false;
-						
-						Box:SetVisible(false);
-					end
-				else
-					NameTag.Visible			= false;
-					DistanceTag.Visible		= false;
-					HeadDot.Visible			= false;
-					Tracer.Visible			= false;
-					OutlineTracer.Visible 	= false;
-					
-					Box:SetVisible(false);
-				end
-			else
-				NameTag.Visible			= false;
-				DistanceTag.Visible		= false;
-				HeadDot.Visible			= false;
-				Tracer.Visible			= false;
-				OutlineTracer.Visible 	= false;
-
-				Box:SetVisible(false);
-			end
-
-			shared.InstanceData[v.Name] = Data;
-		end
-	end
-end
 
 local LastInvalidCheck = 0;
 
@@ -2356,62 +2216,6 @@ local function Update()
 			end
 		end
 	end
-
-	local CX = Menu:GetInstance'CrosshairX';
-	local CY = Menu:GetInstance'CrosshairY';
-	
-	if Options.Crosshair.Value then
-		CX.Visible = true;
-		CY.Visible = true;
-
-		CX.To = V2New((Camera.ViewportSize.X / 2) - 8, (Camera.ViewportSize.Y / 2));
-		CX.From = V2New((Camera.ViewportSize.X / 2) + 8, (Camera.ViewportSize.Y / 2));
-		CY.To = V2New((Camera.ViewportSize.X / 2), (Camera.ViewportSize.Y / 2) - 8);
-		CY.From = V2New((Camera.ViewportSize.X / 2), (Camera.ViewportSize.Y / 2) + 8);
-	else
-		CX.Visible = false;
-		CY.Visible = false;
-	end
-
-	if Options.MenuOpen.Value and MenuLoaded then
-		local MLocation = GetMouseLocation();
-		shared.MenuDrawingData.Instances.Main.Color = Color3.fromHSV(tick() * 24 % 255/255, 1, 1);
-		local MainInstance = Menu:GetInstance'Main';
-		
-		local Values = {
-			MainInstance.Position.X;
-			MainInstance.Position.Y;
-			MainInstance.Position.X + MainInstance.Size.X;
-			MainInstance.Position.Y + MainInstance.Size.Y;
-		};
-		
-		if MainInstance and (MouseHoveringOver(Values) or (SubMenu.Open and MouseHoveringOver(SubMenu.Bounds))) then
-			Debounce.CursorVis = true;
-			
-			Menu:UpdateMenuInstance'Cursor1'{
-				Visible	= true;
-				From	= V2New(MLocation.x, MLocation.y);
-				To		= V2New(MLocation.x + 5, MLocation.y + 6);
-			}
-			Menu:UpdateMenuInstance'Cursor2'{
-				Visible	= true;
-				From	= V2New(MLocation.x, MLocation.y);
-				To		= V2New(MLocation.x, MLocation.y + 8);
-			}
-			Menu:UpdateMenuInstance'Cursor3'{
-				Visible	= true;
-				From	= V2New(MLocation.x, MLocation.y + 6);
-				To		= V2New(MLocation.x + 5, MLocation.y + 5);
-			}
-		else
-			if Debounce.CursorVis then
-				Debounce.CursorVis = false;
-				
-				Menu:UpdateMenuInstance'Cursor1'{Visible = false};
-				Menu:UpdateMenuInstance'Cursor2'{Visible = false};
-				Menu:UpdateMenuInstance'Cursor3'{Visible = false};
-			end
-		end
 		if MouseHeld then
 			local MousePos = GetMouseLocation();
 
