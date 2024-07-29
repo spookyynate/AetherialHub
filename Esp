@@ -34,8 +34,7 @@ local DragOffset = V2New()
 local DraggingWhat = nil
 local OldData = {}
 local IgnoreList = {}
-local EnemyColor = Color3.new(1, 0, 0)
-local TeamColor = Color3.new(0, 1, 0)
+local EnemyColor = Color3.new(1, 0, 0))
 local MenuLoaded = false
 local ErrorLogging = false
 local TracerPosition = V2New(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y - 135)
@@ -75,88 +74,6 @@ local function IsStringEmpty(String)
 end
 
 local function Set(t, i, v) t[i] = v end
-
-local Teams = {};
-local CustomTeams = { -- Games that don't use roblox's team system
-	[2563455047] = {
-		Initialize = function()
-			Teams.Sheriffs = {}; -- prevent big error
-			Teams.Bandits = {}; -- prevent big error
-			local Func = game:GetService'ReplicatedStorage':WaitForChild('RogueFunc', 1);
-			local Event = game:GetService'ReplicatedStorage':WaitForChild('RogueEvent', 1);
-			local S, B = Func:InvokeServer'AllTeamData';
-
-			Teams.Sheriffs = S;
-			Teams.Bandits = B;
-
-			Event.OnClientEvent:Connect(function(id, PlayerName, Team, Remove) -- stolen straight from decompiled src lul
-				if id == 'UpdateTeam' then
-					local TeamTable, NotTeamTable
-					if Team == 'Bandits' then
-						TeamTable = TDM.Bandits
-						NotTeamTable = TDM.Sheriffs
-					else
-						TeamTable = TDM.Sheriffs
-						NotTeamTable = TDM.Bandits
-					end
-					if Remove then
-						TeamTable[PlayerName] = nil
-					else
-						TeamTable[PlayerName] = true
-						NotTeamTable[PlayerName] = nil
-					end
-					if PlayerName == LocalPlayer.Name then
-						TDM.Friendlys = TeamTable
-						TDM.Enemies = NotTeamTable
-					end
-				end
-			end)
-		end;
-		CheckTeam = function(Player)
-			local LocalTeam = Teams.Sheriffs[LocalPlayer.Name] and Teams.Sheriffs or Teams.Bandits;
-			
-			return LocalTeam[Player.Name] and true or false;
-		end;
-	};
-	[5208655184] = {
-		CheckTeam = function(Player)
-			local LocalLastName = LocalPlayer:GetAttribute'LastName' if not LocalLastName or IsStringEmpty(LocalLastName) then return true end
-			local PlayerLastName = Player:GetAttribute'LastName' if not PlayerLastName then return false end
-
-			return PlayerLastName == LocalLastName
-		end
-	};
-	[3541987450] = {
-		CheckTeam = function(Player)
-			local LocalStats = LocalPlayer:FindFirstChild'leaderstats';
-			local LocalLastName = LocalStats and LocalStats:FindFirstChild'LastName'; if not LocalLastName or IsStringEmpty(LocalLastName.Value) then return true; end
-			local PlayerStats = Player:FindFirstChild'leaderstats';
-			local PlayerLastName = PlayerStats and PlayerStats:FindFirstChild'LastName'; if not PlayerLastName then return false; end
-
-			return PlayerLastName.Value == LocalLastName.Value;
-		end;
-	};
-    [6032399813] = {
-		CheckTeam = function(Player)
-			local LocalStats = LocalPlayer:FindFirstChild'leaderstats';
-			local LocalGuildName = LocalStats and LocalStats:FindFirstChild'Guild'; if not LocalGuildName or IsStringEmpty(LocalGuildName.Value) then return true; end
-			local PlayerStats = Player:FindFirstChild'leaderstats';
-			local PlayerGuildName = PlayerStats and PlayerStats:FindFirstChild'Guild'; if not PlayerGuildName then return false; end
-
-			return PlayerGuildName.Value == LocalGuildName.Value;
-		end;
-	};
-    [5735553160] = {
-		CheckTeam = function(Player)
-			local LocalStats = LocalPlayer:FindFirstChild'leaderstats';
-			local LocalGuildName = LocalStats and LocalStats:FindFirstChild'Guild'; if not LocalGuildName or IsStringEmpty(LocalGuildName.Value) then return true; end
-			local PlayerStats = Player:FindFirstChild'leaderstats';
-			local PlayerGuildName = PlayerStats and PlayerStats:FindFirstChild'Guild'; if not PlayerGuildName then return false; end
-
-			return PlayerGuildName.Value == LocalGuildName.Value;
-		end;
-	};
-};
 
 local RenderList = {Instances = {}};
 
@@ -739,18 +656,8 @@ function Load()
 				end
 			end
 
-			if Table.TeamColor then TeamColor = Color3.new(Table.TeamColor.R, Table.TeamColor.G, Table.TeamColor.B) end
-			if Table.EnemyColor then EnemyColor = Color3.new(Table.EnemyColor.R, Table.EnemyColor.G, Table.EnemyColor.B) end
-
-			if typeof(Table.MenuKey) == 'string' then Options.MenuKey(Enum.KeyCode[Table.MenuKey], true) end
-			if typeof(Table.ToggleKey) == 'string' then Options.ToggleKey(Enum.KeyCode[Table.ToggleKey], true) end
-		end
-	end
-end
 
 Options('Enabled', 'ESP Enabled', true);
-Options('ShowTeam', 'Show Team', true);
-Options('ShowTeamColor', 'Show Team Color', false);
 Options('ShowName', 'Show Names', true);
 Options('ShowDistance', 'Show Distance', true);
 Options('ShowHealth', 'Show Health', true);
@@ -772,19 +679,6 @@ Options('ChangeColors', SENTINEL_LOADED and 'Sentinel Unsupported' or 'Change Co
 
 	SubMenu:Show(GetMouseLocation(), 'Unnamed Colors', {
 		{
-			Type = 'Color'; Text = 'Team Color'; Color = TeamColor;
-
-			Function = function(Circ, Position)
-				if tick() - ColorPicker.LastGenerated < 1 then return; end
-
-				if shared.CurrentColorPicker then shared.CurrentColorPicker:Dispose() end
-				local ColorPicker = ColorPicker.new(Position - V2New(-10, 50));
-				CurrentColorPicker = ColorPicker;
-				shared.CurrentColorPicker = CurrentColorPicker;
-				ColorPicker.ColorChanged:Connect(function(Color) Circ.Color = Color TeamColor = Color Options.TeamColor = Color end);
-			end
-		};
-		{
 			Type = 'Color'; Text = 'Enemy Color'; Color = EnemyColor;
 
 			Function = function(Circ, Position)
@@ -798,16 +692,6 @@ Options('ChangeColors', SENTINEL_LOADED and 'Sentinel Unsupported' or 'Change Co
 			end
 		};
 		{
-			Type = 'Button'; Text = 'Reset Colors';
-
-			Function = function()
-				EnemyColor = Color3.new(1, 0, 0);
-				TeamColor = Color3.new(0, 1, 0);
-
-				local C1 = Menu:GetInstance'Sub-ColorPreview.1'; if C1 then C1.Color = TeamColor end
-				local C2 = Menu:GetInstance'Sub-ColorPreview.2'; if C2 then C2.Color = EnemyColor end
-			end
-		};
 		{
 			Type = 'Button'; Text = 'Rainbow Mode';
 
@@ -831,14 +715,6 @@ Options('SaveSettings', 'Save Settings', function()
 	for i, v in pairs(Options) do
 		COptions[i] = v;
 	end
-	
-	if typeof(TeamColor) == 'Color3' then COptions.TeamColor = { R = TeamColor.R; G = TeamColor.G; B = TeamColor.B } end
-	if typeof(EnemyColor) == 'Color3' then COptions.EnemyColor = { R = EnemyColor.R; G = EnemyColor.G; B = EnemyColor.B } end
-	
-	if typeof(COptions.MenuKey.Value) == 'EnumItem' then COptions.MenuKey = COptions.MenuKey.Value.Name end
-	if typeof(COptions.ToggleKey.Value) == 'EnumItem' then COptions.ToggleKey = COptions.ToggleKey.Value.Name end
-
-	writefile(OptionsFile, HttpService:JSONEncode(COptions));
 end, 3);
 
 Load(1);
@@ -2094,30 +1970,6 @@ local function CheckRay(Instance, Distance, Position, Unit)
 	return Pass;
 end
 
-local function CheckTeam(Player)
-	if Player.Neutral and LocalPlayer.Neutral then return true; end
-	return Player.TeamColor == LocalPlayer.TeamColor;
-end
-
-local CustomTeam = CustomTeams[game.PlaceId];
-
-if CustomTeam ~= nil then
-	if CustomTeam.Initialize then ypcall(CustomTeam.Initialize) end
-
-	CheckTeam = CustomTeam.CheckTeam;
-end
-
-local function CheckPlayer(Player, Character)
-	if not Options.Enabled.Value then return false end
-
-	local Pass = true;
-	local Distance = 0;
-
-	if Player ~= LocalPlayer and Character then
-		if not Options.ShowTeam.Value and CheckTeam(Player) then
-			Pass = false;
-		end
-
 		local Head = Character:FindFirstChild'Head';
 
 		if Pass and Character and Head then
@@ -2335,11 +2187,6 @@ local function UpdatePlayerData()
 				if type(GetAliveState) == 'function' then
 					Dead = (not GetAliveState(v, Character))
 				end
-
-				if Character ~= nil and Head and HumanoidRootPart and not Dead then
-					local ScreenPosition, Vis = WorldToViewport(Head.Position);
-					local Color = Rainbow and Color3.fromHSV(tick() * 128 % 255/255, 1, 1) or (CheckTeam(v) and TeamColor or EnemyColor); Color = Options.ShowTeamColor.Value and v.TeamColor.Color or Color;
-					local OPos = Camera.CFrame:pointToObjectSpace(Head.Position);
 					
 					if ScreenPosition.Z < 0 then
 						local AT = math.atan2(OPos.Y, OPos.X) + math.pi;
