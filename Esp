@@ -24,7 +24,6 @@ local Players = game:GetService("Players")
 local Camera = game:GetService("Workspace").CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
-local GuiService = game:GetService("GuiService")
 
 local Typing = false
 local TracersEnabled = true  -- Variable to manage the toggle state
@@ -104,18 +103,20 @@ applyButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
 applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 applyButton.Parent = frame
 
--- Function to handle key input
-local function onKeyInput(input)
-    local keyName = Enum.KeyCode[input.KeyCode.Name]
-    if keyName then
-        return keyName
+-- Function to convert key name to Enum.KeyCode
+local function getKeyCodeFromName(keyName)
+    for _, keyCode in pairs(Enum.KeyCode:GetEnumItems()) do
+        if keyCode.Name == keyName then
+            return keyCode
+        end
     end
+    return nil
 end
 
 -- Function to apply the new key settings
 local function applyKeySettings()
-    local modeKey = Enum.KeyCode[modeSkipKeyInput.Text]
-    local disableKey = Enum.KeyCode[disableKeyInput.Text]
+    local modeKey = getKeyCodeFromName(modeSkipKeyInput.Text)
+    local disableKey = getKeyCodeFromName(disableKeyInput.Text)
     
     if modeKey then
         _G.ModeSkipKey = modeKey
@@ -151,6 +152,30 @@ applyButton.MouseButton1Click:Connect(applyKeySettings)
 modeSkipKeyInput.Text = _G.ModeSkipKey.Name
 disableKeyInput.Text = _G.DisableKey.Name
 
+-- Key input handler
+local function onKeyInput(input)
+    local keyName = Enum.KeyCode[input.KeyCode.Name]
+    if keyName then
+        return keyName
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed then
+        if input.KeyCode == _G.DisableKey and not Typing then
+            _G.TracersVisible = not _G.TracersVisible
+            
+            if _G.SendNotifications then
+                StarterGui:SetCore("SendNotification", {
+                    Title = "Aetherial Hub";
+                    Text = "The tracers' visibility is now set to " .. tostring(_G.TracersVisible) .. ".";
+                    Duration = 5;
+                })
+            end
+        end
+    end
+end)
+
 local function CreateTracers()
     -- ... (existing tracer code)
 end
@@ -161,20 +186,6 @@ end)
 
 UserInputService.TextBoxFocusReleased:Connect(function()
     Typing = false
-end)
-
-UserInputService.InputBegan:Connect(function(Input)
-    if Input.KeyCode == _G.DisableKey and Typing == false then
-        _G.TracersVisible = not _G.TracersVisible
-        
-        if _G.SendNotifications then
-            StarterGui:SetCore("SendNotification", {
-                Title = "Aetherial Hub";
-                Text = "The tracers' visibility is now set to " .. tostring(_G.TracersVisible) .. ".";
-                Duration = 5;
-            })
-        end
-    end
 end)
 
 local Success, Errored = pcall(function()
