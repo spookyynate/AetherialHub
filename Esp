@@ -12,7 +12,7 @@ local Find_Required = API_Check()
 if Find_Required == "No" then
     game:GetService("StarterGui"):SetCore("SendNotification",{
         Title = "Aetherial Hub";
-        Text = "script could not load because of your executor.";
+        Text = "Script could not load because of your executor.";
         Duration = math.huge;
         Button1 = "OK"
     })
@@ -48,11 +48,16 @@ _G.TracerTransparency = 0.7   -- The transparency of the tracers.
 _G.ModeSkipKey = Enum.KeyCode.E   -- The key that changes between modes that indicate where will the tracers come from.
 _G.DisableKey = Enum.KeyCode.Q   -- The key that disables / enables the tracers.
 
-local function CreateTracers()
+_G.OuterGlowColor = Color3.fromRGB(255, 0, 0)  -- Red outer glow color
+_G.FillColor = Color3.fromRGB(255, 150, 150)   -- Lighter red fill color
+
+local function CreateESP()
     for _, v in next, Players:GetPlayers() do
         if v.Name ~= game.Players.LocalPlayer.Name then
             local TracerLine = Drawing.new("Line")
-    
+            local OuterGlow = Drawing.new("Square")
+            local BodyFill = Drawing.new("Square")
+
             RunService.RenderStepped:Connect(function()
                 if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
                     local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
@@ -81,16 +86,54 @@ local function CreateTracers()
                         else
                             TracerLine.Visible = _G.TracersVisible
                         end
+                        
+                        -- Update Outer Glow and Body Fill
+                        local Character = workspace:FindFirstChild(v.Name)
+                        if Character and Character:FindFirstChild("HumanoidRootPart") then
+                            local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+                            local Head = Character:FindFirstChild("Head")
+                            local HRP_Position, HRP_Size = HumanoidRootPart.CFrame, HumanoidRootPart.Size * 1
+                            local Head_Position, Head_Size = Head.CFrame, Head.Size * 1
+                            local HRP_Vector, HRP_OnScreen = Camera:WorldToViewportPoint(HRP_Position * CFrame.new(0, -HRP_Size.Y, 0).p)
+                            local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head_Position * CFrame.new(0, -Head_Size.Y, 0).p)
+                            
+                            if HRP_OnScreen and Head_OnScreen then
+                                OuterGlow.Visible = true
+                                OuterGlow.Color = _G.OuterGlowColor
+                                OuterGlow.Thickness = 3
+                                OuterGlow.Transparency = 0.7
+                                OuterGlow.Size = Vector2.new(30, 60)
+                                OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
+                                
+                                BodyFill.Visible = true
+                                BodyFill.Color = _G.FillColor
+                                BodyFill.Transparency = 0.5
+                                BodyFill.Size = Vector2.new(28, 58)
+                                BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
+                            else
+                                OuterGlow.Visible = false
+                                BodyFill.Visible = false
+                            end
+                        else
+                            OuterGlow.Visible = false
+                            BodyFill.Visible = false
+                        end
                     else
                         TracerLine.Visible = false
+                        OuterGlow.Visible = false
+                        BodyFill.Visible = false
                     end
                 else
                     TracerLine.Visible = false
+                    OuterGlow.Visible = false
+                    BodyFill.Visible = false
                 end
             end)
 
             Players.PlayerRemoving:Connect(function()
                 TracerLine.Visible = false
+                OuterGlow.Visible = false
+                BodyFill.Visible = false
             end)
         end
     end
@@ -99,7 +142,9 @@ local function CreateTracers()
         Player.CharacterAdded:Connect(function(v)
             if v.Name ~= game.Players.LocalPlayer.Name then
                 local TracerLine = Drawing.new("Line")
-        
+                local OuterGlow = Drawing.new("Square")
+                local BodyFill = Drawing.new("Square")
+
                 RunService.RenderStepped:Connect(function()
                     if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
                         local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
@@ -128,81 +173,59 @@ local function CreateTracers()
                             else
                                 TracerLine.Visible = _G.TracersVisible
                             end
+
+                            -- Update Outer Glow and Body Fill
+                            local Character = workspace:FindFirstChild(Player.Name)
+                            if Character and Character:FindFirstChild("HumanoidRootPart") then
+                                local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+                                local Head = Character:FindFirstChild("Head")
+                                local HRP_Position, HRP_Size = HumanoidRootPart.CFrame, HumanoidRootPart.Size * 1
+                                local Head_Position, Head_Size = Head.CFrame, Head.Size * 1
+                                local HRP_Vector, HRP_OnScreen = Camera:WorldToViewportPoint(HRP_Position * CFrame.new(0, -HRP_Size.Y, 0).p)
+                                local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head_Position * CFrame.new(0, -Head_Size.Y, 0).p)
+                                
+                                if HRP_OnScreen and Head_OnScreen then
+                                    OuterGlow.Visible = true
+                                    OuterGlow.Color = _G.OuterGlowColor
+                                    OuterGlow.Thickness = 3
+                                    OuterGlow.Transparency = 0.7
+                                    OuterGlow.Size = Vector2.new(30, 60)
+                                    OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
+                                    
+                                    BodyFill.Visible = true
+                                    BodyFill.Color = _G.FillColor
+                                    BodyFill.Transparency = 0.5
+                                    BodyFill.Size = Vector2.new(28, 58)
+                                    BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
+                                else
+                                    OuterGlow.Visible = false
+                                    BodyFill.Visible = false
+                                end
+                            else
+                                OuterGlow.Visible = false
+                                BodyFill.Visible = false
+                            end
                         else
                             TracerLine.Visible = false
+                            OuterGlow.Visible = false
+                            BodyFill.Visible = false
                         end
                     else
                         TracerLine.Visible = false
+                        OuterGlow.Visible = false
+                        BodyFill.Visible = false
                     end
                 end)
 
                 Players.PlayerRemoving:Connect(function()
                     TracerLine.Visible = false
+                    OuterGlow.Visible = false
+                    BodyFill.Visible = false
                 end)
             end
         end)
     end)
 end
-
-UserInputService.TextBoxFocused:Connect(function()
-    Typing = true
-end)
-
-UserInputService.TextBoxFocusReleased:Connect(function()
-    Typing = false
-end)
-
-UserInputService.InputBegan:Connect(function(Input)
-    if Input.KeyCode == _G.DisableKey and Typing == false then  -- Toggle tracers with _G.DisableKey
-        TracersEnabled = not TracersEnabled
-
-        if _G.SendNotifications == true then
-            game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "Aetherial Hub";
-                Text = "The tracer is now set to " .. tostring(TracersEnabled) .. ".";
-                Duration = 5;
-            })
-        end
-    elseif Input.KeyCode == _G.ModeSkipKey and Typing == false then
-        if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false and _G.TracersVisible == true then
-            _G.FromCenter = false
-            _G.FromBottom = true
-            _G.FromMouse = false
-
-            if _G.SendNotifications == true then
-                game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "Aetherial Hub";
-                    Text = "Tracers will be now coming from the bottom of your screen (Mode 1)";
-                    Duration = 5;
-                })
-            end
-        elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true and _G.TracersVisible == true then
-            _G.FromCenter = true
-            _G.FromBottom = false
-            _G.FromMouse = false
-
-            if _G.SendNotifications == true then
-                game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "Aetherial Hub";
-                    Text = "Tracers will be now coming from the center of your screen (Mode 2)";
-                    Duration = 5;
-                })
-            end
-        elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false and _G.TracersVisible == true then
-            _G.FromCenter = false
-            _G.FromBottom = false
-            _G.FromMouse = true
-
-            if _G.SendNotifications == true then
-                game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "Aetherial Hub";
-                    Text = "Tracers will be now coming from the position of your mouse cursor on your screen (Mode 3)";
-                    Duration = 5;
-                })
-            end
-        end
-    end
-end)
 
 -- Chat Command Handler
 Players.LocalPlayer.Chatted:Connect(function(message)
@@ -280,4 +303,4 @@ Players.LocalPlayer.Chatted:Connect(function(message)
     end
 end)
 
-CreateTracers()
+CreateESP()
