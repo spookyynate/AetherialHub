@@ -1,9 +1,3 @@
--- Function to get the local player's display name
-local function getDisplayName()
-    return game.Players.LocalPlayer.DisplayName
-end
-
--- Check if Drawing API is available
 local function API_Check()
     local success, result = pcall(function()
         return Drawing ~= nil
@@ -14,10 +8,22 @@ end
 local Find_Required = API_Check()
 
 if not Find_Required then
-    local displayName = getDisplayName()
-    game:GetService("StarterGui"):SetCore("SendNotification",{
+    game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Aetherial Hub";
-        Text = "Script could not load because Drawing API is not available for user: " .. displayName;
+        Text = "Script could not load because Drawing API is not available.";
+        Duration = math.huge;
+        Button1 = "OK"
+    })
+
+    return
+end
+
+local Find_Required = API_Check()
+
+if Find_Required == "No" then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Aetherial Hub";
+        Text = "Script could not load because of your executor.";
         Duration = math.huge;
         Button1 = "OK"
     })
@@ -52,93 +58,106 @@ _G.TracerTransparency = 0.7   -- The transparency of the tracers.
 _G.ModeSkipKey = Enum.KeyCode.E   -- The key that changes between modes that indicate where will the tracers come from.
 _G.DisableKey = Enum.KeyCode.Q   -- The key that disables / enables the tracers.
 
-local SkeletonColor = Color3.fromRGB(128, 0, 128)  -- Purple color for the skeleton
-
-local function CreateSkeleton(Character)
-    local Head = Character:FindFirstChild("Head")
-    local HRP = Character:FindFirstChild("HumanoidRootPart")
-
-    if Head and HRP then
-        local HeadPos, HeadOnScreen = Camera:WorldToViewportPoint(Head.Position)
-        local HRPPos, HRPOnScreen = Camera:WorldToViewportPoint(HRP.Position)
-
-        -- Head Circle
-        local HeadCircle = Drawing.new("Circle")
-        HeadCircle.Radius = 10
-        HeadCircle.Position = Vector2.new(HeadPos.X, HeadPos.Y)
-        HeadCircle.Color = SkeletonColor
-        HeadCircle.Thickness = 2
-        HeadCircle.Transparency = 0.5
-        HeadCircle.Filled = false
-
-        -- Torso Line
-        local TorsoLine = Drawing.new("Line")
-        TorsoLine.From = Vector2.new(HeadPos.X, HeadPos.Y + 10)
-        TorsoLine.To = Vector2.new(HRPPos.X, HRPPos.Y - 20)
-        TorsoLine.Color = SkeletonColor
-        TorsoLine.Thickness = 2
-        TorsoLine.Transparency = 0.5
-
-        -- Arms Lines
-        local LeftArmLine = Drawing.new("Line")
-        local RightArmLine = Drawing.new("Line")
-
-        LeftArmLine.From = Vector2.new(HeadPos.X - 15, HeadPos.Y + 10)
-        LeftArmLine.To = Vector2.new(HRPPos.X - 20, HRPPos.Y - 20)
-        LeftArmLine.Color = SkeletonColor
-        LeftArmLine.Thickness = 2
-        LeftArmLine.Transparency = 0.5
-
-        RightArmLine.From = Vector2.new(HeadPos.X + 15, HeadPos.Y + 10)
-        RightArmLine.To = Vector2.new(HRPPos.X + 20, HRPPos.Y - 20)
-        RightArmLine.Color = SkeletonColor
-        RightArmLine.Thickness = 2
-        RightArmLine.Transparency = 0.5
-
-        -- Legs Lines
-        local LeftLegLine = Drawing.new("Line")
-        local RightLegLine = Drawing.new("Line")
-
-        LeftLegLine.From = Vector2.new(HRPPos.X - 10, HRPPos.Y + 10)
-        LeftLegLine.To = Vector2.new(HRPPos.X - 10, HRPPos.Y + 30)
-        LeftLegLine.Color = SkeletonColor
-        LeftLegLine.Thickness = 2
-        LeftLegLine.Transparency = 0.5
-
-        RightLegLine.From = Vector2.new(HRPPos.X + 10, HRPPos.Y + 10)
-        RightLegLine.To = Vector2.new(HRPPos.X + 10, HRPPos.Y + 30)
-        RightLegLine.Color = SkeletonColor
-        RightLegLine.Thickness = 2
-        RightLegLine.Transparency = 0.5
-
-        return {HeadCircle, TorsoLine, LeftArmLine, RightArmLine, LeftLegLine, RightLegLine}
-    end
-end
+_G.OuterGlowColor = Color3.fromRGB(255, 0, 0)  -- Red outer glow color
+_G.FillColor = Color3.fromRGB(255, 150, 150)   -- Lighter red fill color
 
 local function CreateESP()
     for _, v in next, Players:GetPlayers() do
         if v.Name ~= game.Players.LocalPlayer.Name then
-            local SkeletonParts = CreateSkeleton(v.Character or v.CharacterAdded:Wait())
+            local TracerLine = Drawing.new("Line")
+            local OuterGlow = Drawing.new("Square")
+            local BodyFill = Drawing.new("Square")
+            local NameLabel = Drawing.new("Text")
 
             RunService.RenderStepped:Connect(function()
-                if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                    local HRPPos, HRPOnScreen = Camera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
-                    local HeadPos, HeadOnScreen = Camera:WorldToViewportPoint(v.Character.Head.Position)
+                if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
+                    local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
+                    local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
+                    
+                    TracerLine.Thickness = _G.TracerThickness
+                    TracerLine.Transparency = _G.TracerTransparency
+                    TracerLine.Color = _G.TracerColor
 
-                    for _, part in ipairs(SkeletonParts) do
-                        part.Visible = HRPOnScreen and HeadOnScreen and TracersEnabled
+                    if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false then
+                        TracerLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
+                    elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false then
+                        TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                    elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true then
+                        TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                    end
+
+                    if OnScreen == true and TracersEnabled then
+                        TracerLine.To = Vector2.new(Vector.X, Vector.Y)
+                        if _G.TeamCheck == true then 
+                            if Players.LocalPlayer.Team ~= v.Team then
+                                TracerLine.Visible = _G.TracersVisible
+                            else
+                                TracerLine.Visible = false
+                            end
+                        else
+                            TracerLine.Visible = _G.TracersVisible
+                        end
+                        
+                        -- Update Outer Glow and Body Fill
+                        local Character = workspace:FindFirstChild(v.Name)
+                        if Character and Character:FindFirstChild("HumanoidRootPart") then
+                            local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+                            local Head = Character:FindFirstChild("Head")
+                            local HRP_Position, HRP_Size = HumanoidRootPart.CFrame, HumanoidRootPart.Size * 1
+                            local Head_Position, Head_Size = Head.CFrame, Head.Size * 1
+                            local HRP_Vector, HRP_OnScreen = Camera:WorldToViewportPoint(HRP_Position * CFrame.new(0, -HRP_Size.Y, 0).p)
+                            local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head_Position * CFrame.new(0, -Head_Size.Y, 0).p)
+                            
+                            if HRP_OnScreen and Head_OnScreen then
+                                OuterGlow.Visible = true
+                                OuterGlow.Color = _G.OuterGlowColor
+                                OuterGlow.Thickness = 3
+                                OuterGlow.Transparency = 0.7
+                                OuterGlow.Size = Vector2.new(30, 60)
+                                OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
+                                
+                                BodyFill.Visible = true
+                                BodyFill.Color = _G.FillColor
+                                BodyFill.Transparency = 0.5
+                                BodyFill.Size = Vector2.new(28, 58)
+                                BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
+                                
+                                -- Update Name Label
+                                NameLabel.Visible = true
+                                NameLabel.Text = v.Name
+                                NameLabel.Size = 20
+                                NameLabel.Color = Color3.fromRGB(255, 255, 255)
+                                NameLabel.Center = true
+                                NameLabel.Position = Vector2.new(HRP_Vector.X, HRP_Vector.Y - 35)  -- Adjust the position as needed
+                            else
+                                OuterGlow.Visible = false
+                                BodyFill.Visible = false
+                                NameLabel.Visible = false
+                            end
+                        else
+                            OuterGlow.Visible = false
+                            BodyFill.Visible = false
+                            NameLabel.Visible = false
+                        end
+                    else
+                        TracerLine.Visible = false
+                        OuterGlow.Visible = false
+                        BodyFill.Visible = false
+                        NameLabel.Visible = false
                     end
                 else
-                    for _, part in ipairs(SkeletonParts) do
-                        part.Visible = false
-                    end
+                    TracerLine.Visible = false
+                    OuterGlow.Visible = false
+                    BodyFill.Visible = false
+                    NameLabel.Visible = false
                 end
             end)
 
             Players.PlayerRemoving:Connect(function()
-                for _, part in ipairs(SkeletonParts) do
-                    part.Visible = false
-                end
+                TracerLine.Visible = false
+                OuterGlow.Visible = false
+                BodyFill.Visible = false
+                NameLabel.Visible = false
             end)
         end
     end
@@ -146,38 +165,104 @@ local function CreateESP()
     Players.PlayerAdded:Connect(function(Player)
         Player.CharacterAdded:Connect(function(v)
             if v.Name ~= game.Players.LocalPlayer.Name then
-                local SkeletonParts = CreateSkeleton(v.Character or v.CharacterAdded:Wait())
+                local TracerLine = Drawing.new("Line")
+                local OuterGlow = Drawing.new("Square")
+                local BodyFill = Drawing.new("Square")
+                local NameLabel = Drawing.new("Text")
 
                 RunService.RenderStepped:Connect(function()
-                    if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                        local HRPPos, HRPOnScreen = Camera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
-                        local HeadPos, HeadOnScreen = Camera:WorldToViewportPoint(v.Character.Head.Position)
+                    if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
+                        local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
+                        local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
+                        
+                        TracerLine.Thickness = _G.TracerThickness
+                        TracerLine.Transparency = _G.TracerTransparency
+                        TracerLine.Color = _G.TracerColor
 
-                        for _, part in ipairs(SkeletonParts) do
-                            part.Visible = HRPOnScreen and HeadOnScreen and TracersEnabled
+                        if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false then
+                            TracerLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
+                        elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false then
+                            TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                        elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true then
+                            TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                        end
+
+                        if OnScreen == true and TracersEnabled then
+                            TracerLine.To = Vector2.new(Vector.X, Vector.Y)
+                            if _G.TeamCheck == true then 
+                                if Players.LocalPlayer.Team ~= v.Team then
+                                    TracerLine.Visible = _G.TracersVisible
+                                else
+                                    TracerLine.Visible = false
+                                end
+                            else
+                                TracerLine.Visible = _G.TracersVisible
+                            end
+                            
+                            -- Update Outer Glow and Body Fill
+                            local Character = workspace:FindFirstChild(v.Name)
+                            if Character and Character:FindFirstChild("HumanoidRootPart") then
+                                local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+                                local Head = Character:FindFirstChild("Head")
+                                local HRP_Position, HRP_Size = HumanoidRootPart.CFrame, HumanoidRootPart.Size * 1
+                                local Head_Position, Head_Size = Head.CFrame, Head.Size * 1
+                                local HRP_Vector, HRP_OnScreen = Camera:WorldToViewportPoint(HRP_Position * CFrame.new(0, -HRP_Size.Y, 0).p)
+                                local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head_Position * CFrame.new(0, -Head_Size.Y, 0).p)
+                                
+                                if HRP_OnScreen and Head_OnScreen then
+                                    OuterGlow.Visible = true
+                                    OuterGlow.Color = _G.OuterGlowColor
+                                    OuterGlow.Thickness = 3
+                                    OuterGlow.Transparency = 0.7
+                                    OuterGlow.Size = Vector2.new(30, 60)
+                                    OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
+                                    
+                                    BodyFill.Visible = true
+                                    BodyFill.Color = _G.FillColor
+                                    BodyFill.Transparency = 0.5
+                                    BodyFill.Size = Vector2.new(28, 58)
+                                    BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
+                                    
+                                    -- Update Name Label
+                                    NameLabel.Visible = true
+                                    NameLabel.Text = v.Name
+                                    NameLabel.Size = 20
+                                    NameLabel.Color = Color3.fromRGB(255, 255, 255)
+                                    NameLabel.Center = true
+                                    NameLabel.Position = Vector2.new(HRP_Vector.X, HRP_Vector.Y - 35)  -- Adjust the position as needed
+                                else
+                                    OuterGlow.Visible = false
+                                    BodyFill.Visible = false
+                                    NameLabel.Visible = false
+                                end
+                            else
+                                OuterGlow.Visible = false
+                                BodyFill.Visible = false
+                                NameLabel.Visible = false
+                            end
+                        else
+                            TracerLine.Visible = false
+                            OuterGlow.Visible = false
+                            BodyFill.Visible = false
+                            NameLabel.Visible = false
                         end
                     else
-                        for _, part in ipairs(SkeletonParts) do
-                            part.Visible = false
-                        end
+                        TracerLine.Visible = false
+                        OuterGlow.Visible = false
+                        BodyFill.Visible = false
+                        NameLabel.Visible = false
                     end
                 end)
 
                 Players.PlayerRemoving:Connect(function()
-                    for _, part in ipairs(SkeletonParts) do
-                        part.Visible = false
-                    end
+                    TracerLine.Visible = false
+                    OuterGlow.Visible = false
+                    BodyFill.Visible = false
+                    NameLabel.Visible = false
                 end)
             end
         end)
-    end)
+    end
 end
 
 CreateESP()
-
--- Key bindings to manage ESP toggle and settings
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == _G.DisableKey then
-        TracersEnabled = not TracersEnabled
-    end
-end)
