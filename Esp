@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 
 -- Create the GUI
@@ -40,7 +41,7 @@ disableButton.Parent = frame
 local espEnabled = false
 local lines = {}
 
--- Function to draw a line from a start position to an end position
+-- Function to draw or update a line between two positions
 local function updateLine(startPos, endPos, color, line)
     if not line then
         line = Instance.new("Part")
@@ -53,34 +54,33 @@ local function updateLine(startPos, endPos, color, line)
 
     line.Size = Vector3.new(0.1, (startPos - endPos).Magnitude, 0.1)
     line.CFrame = CFrame.new(startPos, endPos) * CFrame.new(0, 0, -line.Size.Y / 2)
+    return line
 end
 
 -- Function to enable ESP for a specific player
 local function enableESPForPlayer(targetPlayer)
-    local character = targetPlayer.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-
-    local headPos = head.Position
+    local targetCharacter = targetPlayer.Character
     local myCharacter = Player.Character
-    if not myCharacter or not myCharacter:FindFirstChild("Head") then return end
+    if not targetCharacter or not myCharacter then return end
 
-    local myHeadPos = myCharacter.Head.Position
+    local targetHead = targetCharacter:FindFirstChild("Head")
+    local myHead = myCharacter:FindFirstChild("Head")
+    if not targetHead or not myHead then return end
 
-    -- Create a new line if it doesn't exist, or update the existing one
+    local targetHeadPos = targetHead.Position
+    local myHeadPos = myHead.Position
+
+    -- Create or update the line connecting to this player
     if not lines[targetPlayer.UserId] then
-        local line = Instance.new("Part")
-        line.Anchored = true
-        line.CanCollide = false
-        line.BrickColor = BrickColor.new("Bright red")
-        line.Material = Enum.Material.SmoothPlastic
-        line.Parent = Workspace
-        lines[targetPlayer.UserId] = line
+        lines[targetPlayer.UserId] = Instance.new("Part")
+        lines[targetPlayer.UserId].Anchored = true
+        lines[targetPlayer.UserId].CanCollide = false
+        lines[targetPlayer.UserId].BrickColor = BrickColor.new("Bright red")
+        lines[targetPlayer.UserId].Material = Enum.Material.SmoothPlastic
+        lines[targetPlayer.UserId].Parent = Workspace
     end
 
-    updateLine(myHeadPos, headPos, "Bright red", lines[targetPlayer.UserId])
+    lines[targetPlayer.UserId] = updateLine(myHeadPos, targetHeadPos, "Bright red", lines[targetPlayer.UserId])
 end
 
 -- Function to remove ESP for a specific player
@@ -123,17 +123,8 @@ disableButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Update ESP lines when players join or respawn
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        if espEnabled then
-            enableESPForPlayer(player)
-        end
-    end)
-end)
-
 -- Continuously update lines
-game:GetService("RunService").RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function()
     if espEnabled then
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= Player then
