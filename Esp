@@ -1,139 +1,97 @@
--- Dynamic ESP Line Script (LocalScript)
+local Luminosity = loadstring(game:HttpGet("https://raw.githubusercontent.com/iHavoc101/Genesis-Studios/main/UserInterface/Luminosity.lua", true))()
 
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local Player = Players.LocalPlayer
+local Window = Luminosity.new("Luminosity UI", "v1.0.0", 4370345701)
 
--- Create the GUI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ESPGui"
-screenGui.Parent = Player.PlayerGui
+local Tab1 = Window.Tab("Tab 1", 6026568198)
+local Folder = Tab1.Folder("Options", "A bunch of options you can use")
+Folder.Button("Button", "Click", function()
+    print("Button Clicked")
+end)
+Folder.Switch("Switch", function(Status)
+    print("Switch Triggered: " .. tostring(Status))
+end)
+Folder.Toggle("Toggle", function(Status)
+    print("Toggle Triggered: " .. tostring(Status))
+end)
+Folder.Toggle("Toggle", function(Status)
+    print("Toggle Triggered: " .. tostring(Status))
+end)
+Folder.TextBox("Textbox", "Placeholder", function(Text)
+    print("TextBox Triggered: " .. Text)
+end)[/align]
+[align=center]Folder.Slider("Slider", {Precise = true, Default = 18, Min = 10, Max = 125}, function(Status)
+    print("Slider Triggered" .. tostring(Status))
+end)
+Tab1.Folder("Lipsum Expanded", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur eu mollis urna, quis feugiat tellus. Integer ut ligula sodales, sodales ipsum ut, imperdiet ipsum. In aliquet quam et venenatis pulvinar. Nullam fermentum porta felis sit amet interdum. Sed tristique fringilla mollis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam quis tempus mauris, nec ultrices metus. Suspendisse mi urna, accumsan at nisi a, tristique porta libero. Integer lobortis elementum lacus cursus consectetur. Morbi mauris ante, posuere at malesuada et, tristique non ipsum. Proin vitae purus pretium, convallis est vitae, dignissim leo. Praesent nec felis vitae.")
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0.3, 0, 0.3, 0)
-frame.Position = UDim2.new(0.35, 0, 0.35, 0)
-frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-frame.BorderSizePixel = 0
-frame.Parent = screenGui
-
-local enableButton = Instance.new("TextButton")
-enableButton.Size = UDim2.new(0.4, 0, 0.2, 0)
-enableButton.Position = UDim2.new(0.1, 0, 0.2, 0)
-enableButton.BackgroundColor3 = Color3.fromRGB(128, 0, 128)  -- Purple color
-enableButton.Text = "Enable ESP"
-enableButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
-enableButton.TextScaled = true
-enableButton.BorderSizePixel = 0
-enableButton.Parent = frame
-
-local disableButton = Instance.new("TextButton")
-disableButton.Size = UDim2.new(0.4, 0, 0.2, 0)
-disableButton.Position = UDim2.new(0.1, 0, 0.6, 0)
-disableButton.BackgroundColor3 = Color3.fromRGB(128, 0, 128)  -- Purple color
-disableButton.Text = "Disable ESP"
-disableButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
-disableButton.TextScaled = true
-disableButton.BorderSizePixel = 0
-disableButton.Parent = frame
-
--- ESP Variables
-local espEnabled = false
-local lines = {}
-
--- Function to create or update the line
-local function updateLine(startPos, endPos, color, line)
-    if not line then
-        line = Instance.new("Part")
-        line.Anchored = true
-        line.CanCollide = false
-        line.BrickColor = BrickColor.new(color)
-        line.Material = Enum.Material.SmoothPlastic
-        line.Parent = Workspace
-    end
-
-    -- Calculate the midpoint for correct orientation
-    local midpoint = (startPos + endPos) / 2
-    local size = Vector3.new(0.1, (startPos - endPos).Magnitude, 0.1)
-    
-    line.Size = size
-    line.CFrame = CFrame.new(midpoint, endPos) * CFrame.new(0, 0, -size.Y / 2)
-    return line
-end
-
--- Function to enable ESP for a specific player
-local function enableESPForPlayer(targetPlayer)
-    local targetCharacter = targetPlayer.Character
-    local myCharacter = Player.Character
-    if not targetCharacter or not myCharacter then return end
-
-    local targetHead = targetCharacter:FindFirstChild("Head")
-    local myHead = myCharacter:FindFirstChild("Head")
-    if not targetHead or not myHead then return end
-
-    local targetHeadPos = targetHead.Position
-    local myHeadPos = myHead.Position
-
-    -- Create or update the line connecting to this player
-    if not lines[targetPlayer.UserId] then
-        lines[targetPlayer.UserId] = Instance.new("Part")
-        lines[targetPlayer.UserId].Anchored = true
-        lines[targetPlayer.UserId].CanCollide = false
-        lines[targetPlayer.UserId].BrickColor = BrickColor.new("Bright red")
-        lines[targetPlayer.UserId].Material = Enum.Material.SmoothPlastic
-        lines[targetPlayer.UserId].Parent = Workspace
-    end
-
-    lines[targetPlayer.UserId] = updateLine(myHeadPos, targetHeadPos, "Bright red", lines[targetPlayer.UserId])
-end
-
--- Function to remove ESP for a specific player
-local function removeESPForPlayer(targetPlayer)
-    local line = lines[targetPlayer.UserId]
-    if line then
-        line:Destroy()
-        lines[targetPlayer.UserId] = nil
-    end
-end
-
--- Function to toggle ESP for all players
-local function toggleESP()
-    espEnabled = not espEnabled
-    if espEnabled then
-        enableButton.Text = "ESP Enabled"
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= Player then
-                enableESPForPlayer(player)
-            end
-        end
-    else
-        enableButton.Text = "Enable ESP"
-        for _, player in ipairs(Players:GetPlayers()) do
-            removeESPForPlayer(player)
-        end
-    end
-end
-
--- Connect buttons to functions
-enableButton.MouseButton1Click:Connect(function()
-    if not espEnabled then
-        toggleESP()
-    end
+local Cheat = Tab1.Cheat("Options", "A bunch of options you can use", function(Status)
+    print("Cheat Triggered: " .. tostring(Status))
+end)
+Cheat.Button("Button", "Click", function()
+    print("Button Clicked")
+end)
+Cheat.Switch("Switch", function(Status)
+    print("Switch Triggered: " .. tostring(Status))
+end)
+Cheat.Toggle("Toggle", function(Status)
+    print("Toggle Triggered: " .. tostring(Status))
+end)
+Cheat.Toggle("Toggle", function(Status)
+    print("Toggle Triggered: " .. tostring(Status))
+end)
+Cheat.TextBox("Textbox", "Placeholder", function(Text)
+    print("TextBox Triggered: " .. Text)
 end)
 
-disableButton.MouseButton1Click:Connect(function()
-    if espEnabled then
-        toggleESP()
-    end
+Tab1.Cheat("Lipsum Expanded", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur eu mollis urna, quis feugiat tellus. Integer ut ligula sodales, sodales ipsum ut, imperdiet ipsum. In aliquet quam et venenatis pulvinar. Nullam fermentum porta felis sit amet interdum. Sed tristique fringilla mollis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam quis tempus mauris, nec ultrices metus. Suspendisse mi urna, accumsan at nisi a, tristique porta libero. Integer lobortis elementum lacus cursus consectetur. Morbi mauris ante, posuere at malesuada et, tristique non ipsum. Proin vitae purus pretium, convallis est vitae, dignissim leo. Praesent nec felis vitae.", function(Status)
+    print("Cheat Triggered: " .. tostring(Status))
 end)
 
--- Continuously update lines
-RunService.RenderStepped:Connect(function()
-    if espEnabled then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= Player then
-                enableESPForPlayer(player)
-            end
-        end
+-- Tab 2 --
+local Tab2 = Window.Tab("Tab 2", 6022668945)
+local Folder = Tab2.Folder("Options", "A bunch of options you can use")
+Folder.Button("Button", "Click", function()
+    print("Button Clicked")
+end)
+Folder.Switch("Switch", function(Status)
+    print("Switch Triggered: " .. tostring(Status))
+end)
+Folder.Toggle("Toggle", function(Status)
+    print("Toggle Triggered: " .. tostring(Status))
+end)
+Folder.Toggle("Toggle", function(Status)
+    print("Toggle Triggered: " .. tostring(Status))
+end)
+Folder.TextBox("Textbox", "Placeholder", function(Text)
+    print("TextBox Triggered: " .. Text)
+end)
+Tab2.Folder("Lipsum Expanded", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur eu mollis urna, quis feugiat tellus. Integer ut ligula sodales, sodales ipsum ut, imperdiet ipsum. In aliquet quam et venenatis pulvinar. Nullam fermentum porta felis sit amet interdum. Sed tristique fringilla mollis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam quis tempus mauris, nec ultrices metus. Suspendisse mi urna, accumsan at nisi a, tristique porta libero. Integer lobortis elementum lacus cursus consectetur. Morbi mauris ante, posuere at malesuada et, tristique non ipsum. Proin vitae purus pretium, convallis est vitae, dignissim leo. Praesent nec felis vitae.")
+
+local Cheat = Tab2.Cheat("Options", "A bunch of options you can use", function(Status)
+    print("Cheat Triggered: " .. tostring(Status))
+end)
+Cheat.Button("Button", "Click" function()
+    print("Button Clicked")
+end)
+Cheat.Switch("Switch", function(Status)
+    print("Switch Triggered: " .. tostring(Status))
+end)
+Cheat.Toggle("Toggle", function(Status)
+    print("Toggle Triggered: " .. tostring(Status))
+end)
+Cheat.Toggle("Toggle", function(Status)
+    print("Toggle Triggered: " .. tostring(Status))
+end)
+Cheat.TextBox("Textbox", "Placeholder", function(Text)
+print("TextBox Triggered: " .. Text)
+end)
+
+Tab2.Cheat("Lipsum Expanded", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur eu mollis urna, quis feugiat tellus. Integer ut ligula sodales, sodales ipsum ut, imperdiet ipsum. In aliquet quam et venenatis pulvinar. Nullam fermentum porta felis sit amet interdum. Sed tristique fringilla mollis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam quis tempus mauris, nec ultrices metus. Suspendisse mi urna, accumsan at nisi a, tristique porta libero. Integer lobortis elementum lacus cursus consectetur. Morbi mauris ante, posuere at malesuada et, tristique non ipsum. Proin vitae purus pretium, convallis est vitae, dignissim leo. Praesent nec felis vitae.", function(Status)
+print("Cheat Triggered: " .. tostring(Status))
+end)
+
+game:GetService("UserInputService").InputBegan:Connect(function(Input)
+if Input.KeyCode == Enum.KeyCode.F then
+        Window:Toggle()
     end
 end)
