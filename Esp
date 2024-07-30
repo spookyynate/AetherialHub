@@ -1,142 +1,218 @@
--- Load the Luminosity UI library
-local Luminosity = loadstring(game:HttpGet("https://raw.githubusercontent.com/iHavoc101/Genesis-Studios/main/UserInterface/Luminosity.lua", true))()
-
--- Create a new Luminosity window with a dark purple theme
-local Window = Luminosity.new("Aetherial Hub", "v1.0.0", 4370345701)
-
--- Create a tab for ESP settings
-local Tab1 = Window.Tab("ESP Settings", 6026568198)
-local Folder = Tab1.Folder("Options", "Control ESP visibility")
-
--- Add a button to toggle ESP visibility
-local ESPEnabled = true
-
-Folder.Button("Toggle ESP", function()
-    ESPEnabled = not ESPEnabled
-    _G.ESPVisible = ESPEnabled
-    
-    -- Notify the user
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Aetherial Hub",
-        Text = "ESP visibility is now " .. (ESPEnabled and "Enabled" or "Disabled"),
-        Duration = 5,
-    })
-end)
-
--- Initialize ESP logic
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local Camera = game:GetService("Workspace").CurrentCamera
-local UserInputService = game:GetService("UserInputService")
-
--- Check Drawing API availability
+-- Check if Drawing API is available
 local function API_Check()
-    return Drawing and "Yes" or "No"
+    if Drawing == nil then
+        return "No"
+    else
+        return "Yes"
+    end
 end
 
 local Find_Required = API_Check()
 
 if Find_Required == "No" then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Exunys Developer",
-        Text = "ESP script could not be loaded because your exploit is unsupported.",
-        Duration = math.huge,
-        Button1 = "OK"
-    })
     return
 end
 
-local function CreateESP()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Name ~= game.Players.LocalPlayer.Name then
-            -- Create ESP for players
-            local ESPBox = Drawing.new("Square")
-            local ESPName = Drawing.new("Text")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Camera = game:GetService("Workspace").CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
 
+local Typing = false
+local TracersEnabled = true
+local DefaultKey = Enum.KeyCode.G
+
+_G.SendNotifications = false
+_G.DefaultSettings = false
+_G.TeamCheck = false
+_G.FromMouse = false
+_G.FromCenter = false
+_G.FromBottom = true
+_G.TracersVisible = true
+_G.TracerColor = Color3.fromRGB(255, 80, 10)
+_G.TracerThickness = 1
+_G.TracerTransparency = 0.7
+_G.ModeSkipKey = Enum.KeyCode.E
+_G.DisableKey = Enum.KeyCode.Q
+
+local function CreateTracers()
+    for _, v in next, Players:GetPlayers() do
+        if v.Name ~= game.Players.LocalPlayer.Name then
+            local TracerLine = Drawing.new("Line")
+    
             RunService.RenderStepped:Connect(function()
-                if workspace:FindFirstChild(player.Name) and workspace[player.Name]:FindFirstChild("HumanoidRootPart") then
-                    local HumanoidRootPart_Position = workspace[player.Name].HumanoidRootPart.CFrame.p
-                    local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position)
+                if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
+                    local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
+                    local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
                     
-                    ESPBox.Thickness = 1
-                    ESPBox.Color = Color3.fromRGB(255, 0, 0) -- Red color for box
-                    ESPBox.Filled = false
-                    ESPBox.Transparency = 1
-                    ESPBox.Size = Vector2.new(100, 100)
-                    
-                    ESPName.Text = player.Name
-                    ESPName.Size = 14
-                    ESPName.Color = Color3.fromRGB(255, 0, 0) -- Red color for text
-                    ESPName.Outline = true
-                    ESPName.OutlineColor = Color3.fromRGB(0, 0, 0) -- Black outline for text
+                    TracerLine.Thickness = _G.TracerThickness
+                    TracerLine.Transparency = _G.TracerTransparency
+                    TracerLine.Color = _G.TracerColor
 
-                    if OnScreen then
-                        ESPBox.Position = Vector2.new(Vector.X - ESPBox.Size.X / 2, Vector.Y - ESPBox.Size.Y / 2)
-                        ESPName.Position = Vector2.new(Vector.X, Vector.Y - ESPBox.Size.Y / 2)
-                        ESPBox.Visible = ESPEnabled
-                        ESPName.Visible = ESPEnabled
+                    if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false then
+                        TracerLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
+                    elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false then
+                        TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                    elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true then
+                        TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                    end
+
+                    if OnScreen == true and TracersEnabled then
+                        TracerLine.To = Vector2.new(Vector.X, Vector.Y)
+                        if _G.TeamCheck == true then 
+                            if Players.LocalPlayer.Team ~= v.Team then
+                                TracerLine.Visible = _G.TracersVisible
+                            else
+                                TracerLine.Visible = false
+                            end
+                        else
+                            TracerLine.Visible = _G.TracersVisible
+                        end
                     else
-                        ESPBox.Visible = false
-                        ESPName.Visible = false
+                        TracerLine.Visible = false
                     end
                 else
-                    ESPBox.Visible = false
-                    ESPName.Visible = false
+                    TracerLine.Visible = false
                 end
             end)
 
             Players.PlayerRemoving:Connect(function()
-                ESPBox.Visible = false
-                ESPName.Visible = false
+                TracerLine.Visible = false
             end)
         end
     end
 
-    Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function()
-            if player.Name ~= game.Players.LocalPlayer.Name then
-                local ESPBox = Drawing.new("Square")
-                local ESPName = Drawing.new("Text")
-
+    Players.PlayerAdded:Connect(function(Player)
+        Player.CharacterAdded:Connect(function(v)
+            if v.Name ~= game.Players.LocalPlayer.Name then
+                local TracerLine = Drawing.new("Line")
+        
                 RunService.RenderStepped:Connect(function()
-                    if workspace:FindFirstChild(player.Name) and workspace[player.Name]:FindFirstChild("HumanoidRootPart") then
-                        local HumanoidRootPart_Position = workspace[player.Name].HumanoidRootPart.CFrame.p
-                        local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position)
-
-                        ESPBox.Thickness = 1
-                        ESPBox.Color = Color3.fromRGB(255, 0, 0)
-                        ESPBox.Filled = false
-                        ESPBox.Transparency = 1
-                        ESPBox.Size = Vector2.new(100, 100)
+                    if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
+                        local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
+                        local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
                         
-                        ESPName.Text = player.Name
-                        ESPName.Size = 14
-                        ESPName.Color = Color3.fromRGB(255, 0, 0)
-                        ESPName.Outline = true
-                        ESPName.OutlineColor = Color3.fromRGB(0, 0, 0)
+                        TracerLine.Thickness = _G.TracerThickness
+                        TracerLine.Transparency = _G.TracerTransparency
+                        TracerLine.Color = _G.TracerColor
 
-                        if OnScreen then
-                            ESPBox.Position = Vector2.new(Vector.X - ESPBox.Size.X / 2, Vector.Y - ESPBox.Size.Y / 2)
-                            ESPName.Position = Vector2.new(Vector.X, Vector.Y - ESPBox.Size.Y / 2)
-                            ESPBox.Visible = ESPEnabled
-                            ESPName.Visible = ESPEnabled
+                        if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false then
+                            TracerLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
+                        elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false then
+                            TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                        elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true then
+                            TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                        end
+
+                        if OnScreen == true and TracersEnabled then
+                            TracerLine.To = Vector2.new(Vector.X, Vector.Y)
+                            if _G.TeamCheck == true then 
+                                if Players.LocalPlayer.Team ~= Player.Team then
+                                    TracerLine.Visible = _G.TracersVisible
+                                else
+                                    TracerLine.Visible = false
+                                end
+                            else
+                                TracerLine.Visible = _G.TracersVisible
+                            end
                         else
-                            ESPBox.Visible = false
-                            ESPName.Visible = false
+                            TracerLine.Visible = false
                         end
                     else
-                        ESPBox.Visible = false
-                        ESPName.Visible = false
+                        TracerLine.Visible = false
                     end
                 end)
 
                 Players.PlayerRemoving:Connect(function()
-                    ESPBox.Visible = false
-                    ESPName.Visible = false
+                    TracerLine.Visible = false
                 end)
             end
         end)
     end)
 end
 
-CreateESP()
+UserInputService.TextBoxFocused:Connect(function()
+    Typing = true
+end)
+
+UserInputService.TextBoxFocusReleased:Connect(function()
+    Typing = false
+end)
+
+UserInputService.InputBegan:Connect(function(Input, GameProcessed)
+    if GameProcessed then
+        return
+    end
+
+    if Input.KeyCode == DefaultKey and Typing == false then  -- Toggle tracers with the default key
+        TracersEnabled = not TracersEnabled
+    elseif Input.KeyCode == _G.ModeSkipKey and Typing == false then
+        if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false and _G.TracersVisible == true then
+            _G.FromCenter = false
+            _G.FromBottom = true
+            _G.FromMouse = false
+        elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true and _G.TracersVisible == true then
+            _G.FromCenter = true
+            _G.FromBottom = false
+            _G.FromMouse = false
+        elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false and _G.TracersVisible == true then
+            _G.FromCenter = false
+            _G.FromBottom = false
+            _G.FromMouse = true
+        end
+    elseif Input.KeyCode == _G.DisableKey and Typing == false then
+        _G.TracersVisible = not _G.TracersVisible
+    elseif Input.KeyCode == Enum.KeyCode.Escape then
+        -- Optionally, add functionality for the Escape key if needed
+    end
+end)
+
+local function CreateGUI()
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 300, 0, 150)
+    MainFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, 0, 0, 30)
+    TitleLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.Text = "Aetherial Hub Controls"
+    TitleLabel.TextSize = 24
+    TitleLabel.Parent = MainFrame
+
+    local KeyLabel = Instance.new("TextLabel")
+    KeyLabel.Size = UDim2.new(1, 0, 0, 30)
+    KeyLabel.Position = UDim2.new(0, 0, 0.2, 0)
+    KeyLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    KeyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KeyLabel.Text = "Default Key: " .. tostring(DefaultKey)
+    KeyLabel.TextSize = 18
+    KeyLabel.Parent = MainFrame
+
+    local InstructionsLabel = Instance.new("TextLabel")
+    InstructionsLabel.Size = UDim2.new(1, 0, 0, 30)
+    InstructionsLabel.Position = UDim2.new(0, 0, 0.4, 0)
+    InstructionsLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    InstructionsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InstructionsLabel.Text = "Press any key to change the default key."
+    InstructionsLabel.TextSize = 18
+    InstructionsLabel.Parent = MainFrame
+
+    local function OnInput(input)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            DefaultKey = input.KeyCode
+            KeyLabel.Text = "Default Key: " .. tostring(DefaultKey)
+            UserInputService.InputBegan:Disconnect(OnInput)  -- Disconnect listener after key press
+        end
+    end
+
+    UserInputService.InputBegan:Connect(OnInput)
+end
+
+CreateGUI()
+CreateTracers()
