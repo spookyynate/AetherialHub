@@ -1,10 +1,21 @@
--- Check if Drawing API is available
 local function API_Check()
-    if Drawing == nil then
-        return "No"
-    else
-        return "Yes"
-    end
+    local success, result = pcall(function()
+        return Drawing ~= nil
+    end)
+    return success and result
+end
+
+local Find_Required = API_Check()
+
+if not Find_Required then
+    game:GetService("StarterGui"):SetCore("SendNotification",{
+        Title = "Aetherial Hub";
+        Text = "Script could not load because Drawing API is not available.";
+        Duration = math.huge;
+        Button1 = "OK"
+    })
+
+    return
 end
 
 local Find_Required = API_Check()
