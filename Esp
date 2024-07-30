@@ -29,10 +29,10 @@ local TestService = game:GetService("TestService")
 local Typing = false
 local TracersEnabled = true  -- Variable to manage the toggle state
 
-_G.SendNotifications = true   -- If set to true, the script will notify you frequently on any changes applied and when loaded / errored.
-_G.DefaultSettings = false   -- If set to true, the tracer script will run with default settings regardless of any changes you made.
+_G.SendNotifications = true   -- If set to true then the script would notify you frequently on any changes applied and when loaded / errored. (If a game can detect this, it is recommended to set it to false)
+_G.DefaultSettings = false   -- If set to true then the tracer script would run with default settings regardless of any changes you made.
 
-_G.TeamCheck = false   -- If set to true, the script will create tracers only for the enemy team members.
+_G.TeamCheck = false   -- If set to true then the script would create tracers only for the enemy team members.
 
 --[!]-- ONLY ONE OF THESE VALUES SHOULD BE SET TO TRUE TO NOT ERROR THE SCRIPT --[!]--
 
@@ -40,14 +40,13 @@ _G.FromMouse = false   -- If set to true, the tracers will come from the positio
 _G.FromCenter = false   -- If set to true, the tracers will come from the center of your screen.
 _G.FromBottom = true   -- If set to true, the tracers will come from the bottom of your screen.
 
-_G.TracersVisible = true   -- If set to true, the tracers will be visible and vice versa.
+_G.TracersVisible = true   -- If set to true then the tracers will be visible and vice versa.
 _G.TracerColor = Color3.fromRGB(255, 80, 10)   -- The color that the tracers would appear as.
 _G.TracerThickness = 1   -- The thickness of the tracers.
 _G.TracerTransparency = 0.7   -- The transparency of the tracers.
 
--- Keybinds (can be customized)
-_G.ModeSkipKey = Enum.KeyCode.E   -- The key that changes between modes for tracers
-_G.DisableKey = Enum.KeyCode.Q   -- The key that disables / enables the tracers
+_G.ModeSkipKey = Enum.KeyCode.E   -- The key that changes between modes that indicate where will the tracers come from.
+_G.DisableKey = Enum.KeyCode.Q   -- The key that disables / enables the tracers.
 
 local function CreateTracers()
     for _, v in next, Players:GetPlayers() do
@@ -104,7 +103,7 @@ local function CreateTracers()
                 RunService.RenderStepped:Connect(function()
                     if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
                         local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
-                    	local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
+                        local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
                         
                         TracerLine.Thickness = _G.TracerThickness
                         TracerLine.Transparency = _G.TracerTransparency
@@ -154,7 +153,17 @@ UserInputService.TextBoxFocusReleased:Connect(function()
 end)
 
 UserInputService.InputBegan:Connect(function(Input)
-    if Input.KeyCode == _G.ModeSkipKey and Typing == false then
+    if Input.KeyCode == _G.DisableKey and Typing == false then  -- Toggle tracers with _G.DisableKey
+        TracersEnabled = not TracersEnabled
+
+        if _G.SendNotifications == true then
+            game:GetService("StarterGui"):SetCore("SendNotification",{
+                Title = "Aetherial Hub";
+                Text = "The tracer is now set to " .. tostring(TracersEnabled) .. ".";
+                Duration = 5;
+            })
+        end
+    elseif Input.KeyCode == _G.ModeSkipKey and Typing == false then
         if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false and _G.TracersVisible == true then
             _G.FromCenter = false
             _G.FromBottom = true
@@ -187,32 +196,10 @@ UserInputService.InputBegan:Connect(function(Input)
             if _G.SendNotifications == true then
                 game:GetService("StarterGui"):SetCore("SendNotification",{
                     Title = "Aetherial Hub";
-                    Text = "Tracers will be now coming from the position of your mouse (Mode 3)";
+                    Text = "Tracers will be now coming from the position of your mouse cursor on your screen (Mode 3)";
                     Duration = 5;
                 })
             end
-        elseif _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false and _G.TracersVisible == true then
-            _G.FromCenter = false
-            _G.FromBottom = false
-            _G.FromMouse = false
-
-            if _G.SendNotifications == true then
-                game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "Aetherial Hub";
-                    Text = "Tracers will now be invisible (Mode 4)";
-                    Duration = 5;
-                })
-            end
-        end
-    elseif Input.KeyCode == _G.DisableKey and Typing == false then
-        TracersEnabled = not TracersEnabled
-
-        if _G.SendNotifications == true then
-            game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "Aetherial Hub";
-                Text = "Tracers are now set to " .. tostring(TracersEnabled) .. ".";
-                Duration = 5;
-            })
         end
     end
 end)
@@ -259,6 +246,34 @@ Players.LocalPlayer.Chatted:Connect(function(message)
             game:GetService("StarterGui"):SetCore("SendNotification",{
                 Title = "Aetherial Hub";
                 Text = "Invalid keybind.";
+                Duration = 5;
+            })
+        end
+    elseif command:lower() == "/color" and #args == 2 then
+        local colorArgs = string.split(args[2], ",")
+        if #colorArgs == 3 then
+            local r = tonumber(colorArgs[1])
+            local g = tonumber(colorArgs[2])
+            local b = tonumber(colorArgs[3])
+            
+            if r and g and b and r >= 0 and r <= 255 and g >= 0 and g <= 255 and b >= 0 and b <= 255 then
+                _G.TracerColor = Color3.fromRGB(r, g, b)
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "Aetherial Hub";
+                    Text = "Tracer color changed to (" .. r .. ", " .. g .. ", " .. b .. ")";
+                    Duration = 5;
+                })
+            else
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "Aetherial Hub";
+                    Text = "Invalid color values. Please use format R,G,B with values between 0 and 255.";
+                    Duration = 5;
+                })
+            end
+        else
+            game:GetService("StarterGui"):SetCore("SendNotification",{
+                Title = "Aetherial Hub";
+                Text = "Invalid color format. Please use format R,G,B.";
                 Duration = 5;
             })
         end
