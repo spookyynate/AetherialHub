@@ -26,78 +26,47 @@ local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
 
 local Typing = false
-local TracersEnabled = true  -- Variable to manage the toggle state
+local ESPEnabled = true  -- Variable to manage the ESP toggle state
 
 -- Define default settings
 local defaultSettings = {
-    TracersVisible = true,
-    TracerColor = Color3.fromRGB(255, 80, 10),
-    TracerThickness = 1,
-    TracerTransparency = 0.7,
-    ModeSkipKey = Enum.KeyCode.E,
-    DisableKey = Enum.KeyCode.Q,
+    ESPKey = Enum.KeyCode.E -- Default key for toggling ESP
 }
 
 _G.SendNotifications = true
-_G.DefaultSettings = false
-_G.TeamCheck = false
-_G.FromMouse = false
-_G.FromCenter = false
-_G.FromBottom = true
-_G.TracersVisible = defaultSettings.TracersVisible
-_G.TracerColor = defaultSettings.TracerColor
-_G.TracerThickness = defaultSettings.TracerThickness
-_G.TracerTransparency = defaultSettings.TracerTransparency
-_G.ModeSkipKey = defaultSettings.ModeSkipKey
-_G.DisableKey = defaultSettings.DisableKey
+_G.ESPKey = defaultSettings.ESPKey
 
 -- Create the GUI
 local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
-local modeSkipKeyLabel = Instance.new("TextLabel")
-local modeSkipKeyInput = Instance.new("TextBox")
-local disableKeyLabel = Instance.new("TextLabel")
-local disableKeyInput = Instance.new("TextBox")
+local espKeyLabel = Instance.new("TextLabel")
+local espKeyInput = Instance.new("TextBox")
 local applyButton = Instance.new("TextButton")
 
 screenGui.Name = "AetherialHubGUI"
 screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-frame.Size = UDim2.new(0, 300, 0, 200)
-frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+frame.Size = UDim2.new(0, 300, 0, 150)
+frame.Position = UDim2.new(0.5, -150, 0.5, -75)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.Parent = screenGui
 
-modeSkipKeyLabel.Size = UDim2.new(0, 150, 0, 50)
-modeSkipKeyLabel.Position = UDim2.new(0.1, 0, 0.2, 0)
-modeSkipKeyLabel.Text = "Mode Skip Key:"
-modeSkipKeyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-modeSkipKeyLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-modeSkipKeyLabel.Parent = frame
+espKeyLabel.Size = UDim2.new(0, 150, 0, 50)
+espKeyLabel.Position = UDim2.new(0.1, 0, 0.2, 0)
+espKeyLabel.Text = "ESP Key:"
+espKeyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+espKeyLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+espKeyLabel.Parent = frame
 
-modeSkipKeyInput.Size = UDim2.new(0, 100, 0, 50)
-modeSkipKeyInput.Position = UDim2.new(0.5, -50, 0.2, 0)
-modeSkipKeyInput.Text = _G.ModeSkipKey.Name
-modeSkipKeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-modeSkipKeyInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-modeSkipKeyInput.Parent = frame
-
-disableKeyLabel.Size = UDim2.new(0, 150, 0, 50)
-disableKeyLabel.Position = UDim2.new(0.1, 0, 0.7, 0)
-disableKeyLabel.Text = "Disable Key:"
-disableKeyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-disableKeyLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-disableKeyLabel.Parent = frame
-
-disableKeyInput.Size = UDim2.new(0, 100, 0, 50)
-disableKeyInput.Position = UDim2.new(0.5, -50, 0.7, 0)
-disableKeyInput.Text = _G.DisableKey.Name
-disableKeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-disableKeyInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-disableKeyInput.Parent = frame
+espKeyInput.Size = UDim2.new(0, 100, 0, 50)
+espKeyInput.Position = UDim2.new(0.5, -50, 0.2, 0)
+espKeyInput.Text = _G.ESPKey.Name
+espKeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+espKeyInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+espKeyInput.Parent = frame
 
 applyButton.Size = UDim2.new(0, 100, 0, 50)
-applyButton.Position = UDim2.new(0.5, -50, 0.9, 0)
+applyButton.Position = UDim2.new(0.5, -50, 0.8, 0)
 applyButton.Text = "Apply"
 applyButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
 applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -115,69 +84,59 @@ end
 
 -- Function to apply the new key settings
 local function applyKeySettings()
-    local modeKey = getKeyCodeFromName(modeSkipKeyInput.Text)
-    local disableKey = getKeyCodeFromName(disableKeyInput.Text)
+    local espKey = getKeyCodeFromName(espKeyInput.Text)
     
-    if modeKey then
-        _G.ModeSkipKey = modeKey
+    if espKey then
+        _G.ESPKey = espKey
+        StarterGui:SetCore("SendNotification", {
+            Title = "Aetherial Hub",
+            Text = "ESP Key updated to: " .. _G.ESPKey.Name,
+            Duration = 5,
+        })
     else
         StarterGui:SetCore("SendNotification", {
             Title = "Aetherial Hub",
-            Text = "Invalid Mode Skip Key. Please enter a valid key.",
+            Text = "Invalid ESP Key. Please enter a valid key.",
             Duration = 5,
         })
     end
-    
-    if disableKey then
-        _G.DisableKey = disableKey
-    else
-        StarterGui:SetCore("SendNotification", {
-            Title = "Aetherial Hub",
-            Text = "Invalid Disable Key. Please enter a valid key.",
-            Duration = 5,
-        })
-    end
-    
-    StarterGui:SetCore("SendNotification", {
-        Title = "Aetherial Hub",
-        Text = "Key bindings updated. Mode Skip Key: " .. _G.ModeSkipKey.Name .. ", Disable Key: " .. _G.DisableKey.Name,
-        Duration = 5,
-    })
 end
 
 -- Connect input events
 applyButton.MouseButton1Click:Connect(applyKeySettings)
 
 -- Update GUI with default key values
-modeSkipKeyInput.Text = _G.ModeSkipKey.Name
-disableKeyInput.Text = _G.DisableKey.Name
+espKeyInput.Text = _G.ESPKey.Name
 
 -- Key input handler
-local function onKeyInput(input)
-    local keyName = Enum.KeyCode[input.KeyCode.Name]
-    if keyName then
-        return keyName
-    end
-end
-
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed then
-        if input.KeyCode == _G.DisableKey and not Typing then
-            _G.TracersVisible = not _G.TracersVisible
+        if input.KeyCode == _G.ESPKey then
+            ESPEnabled = not ESPEnabled
             
-            if _G.SendNotifications then
+            if ESPEnabled then
+                -- Show ESP
+                -- Add your ESP logic here
                 StarterGui:SetCore("SendNotification", {
-                    Title = "Aetherial Hub";
-                    Text = "The tracers' visibility is now set to " .. tostring(_G.TracersVisible) .. ".";
-                    Duration = 5;
+                    Title = "Aetherial Hub",
+                    Text = "ESP Enabled.",
+                    Duration = 5,
+                })
+            else
+                -- Hide ESP
+                -- Add your ESP hide logic here
+                StarterGui:SetCore("SendNotification", {
+                    Title = "Aetherial Hub",
+                    Text = "ESP Disabled.",
+                    Duration = 5,
                 })
             end
         end
     end
 end)
 
-local function CreateTracers()
-    -- ... (existing tracer code)
+local function CreateESP()
+    -- Your existing ESP creation code goes here
 end
 
 UserInputService.TextBoxFocused:Connect(function()
@@ -189,14 +148,14 @@ UserInputService.TextBoxFocusReleased:Connect(function()
 end)
 
 local Success, Errored = pcall(function()
-    CreateTracers()
+    CreateESP()
 end)
 
 if Success and not Errored then
     if _G.SendNotifications then
         StarterGui:SetCore("SendNotification", {
             Title = "Aetherial Hub";
-            Text = "Tracer script has successfully loaded.";
+            Text = "ESP script has successfully loaded.";
             Duration = 5;
         })
     end
@@ -204,7 +163,7 @@ elseif Errored and not Success then
     if _G.SendNotifications then
         StarterGui:SetCore("SendNotification", {
             Title = "Aetherial Hub";
-            Text = "Tracer script has errored while loading, please check the developer console! (F9)";
+            Text = "ESP script has errored while loading, please check the developer console! (F9)";
             Duration = 5;
         })
     end
