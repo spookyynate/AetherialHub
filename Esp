@@ -41,7 +41,7 @@ disableButton.Parent = frame
 local espEnabled = false
 local lines = {}
 
--- Function to draw or update a line between two positions
+-- Function to create or update the line
 local function updateLine(startPos, endPos, color, line)
     if not line then
         line = Instance.new("Part")
@@ -52,8 +52,12 @@ local function updateLine(startPos, endPos, color, line)
         line.Parent = Workspace
     end
 
-    line.Size = Vector3.new(0.1, (startPos - endPos).Magnitude, 0.1)
-    line.CFrame = CFrame.new(startPos, endPos) * CFrame.new(0, 0, -line.Size.Y / 2)
+    -- Calculate the midpoint for correct orientation
+    local midpoint = (startPos + endPos) / 2
+    local size = Vector3.new(0.1, (startPos - endPos).Magnitude, 0.1)
+    
+    line.Size = size
+    line.CFrame = CFrame.new(midpoint, endPos) * CFrame.new(0, 0, -size.Y / 2)
     return line
 end
 
