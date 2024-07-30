@@ -12,7 +12,7 @@ local Find_Required = API_Check()
 if Find_Required == "No" then
     game:GetService("StarterGui"):SetCore("SendNotification",{
         Title = "Aetherial Hub";
-        Text = "script could not fucking load because of your shitty executor.";
+        Text = "script could not load because of your executor.";
         Duration = math.huge;
         Button1 = "OK"
     })
@@ -29,10 +29,10 @@ local TestService = game:GetService("TestService")
 local Typing = false
 local TracersEnabled = true  -- Variable to manage the toggle state
 
-_G.SendNotifications = true   -- If set to true then the script would notify you frequently on any changes applied and when loaded / errored. (If a game can detect this, it is recommended to set it to false)
-_G.DefaultSettings = false   -- If set to true then the tracer script would run with default settings regardless of any changes you made.
+_G.SendNotifications = true   -- If set to true, the script will notify you frequently on any changes applied and when loaded / errored.
+_G.DefaultSettings = false   -- If set to true, the tracer script will run with default settings regardless of any changes you made.
 
-_G.TeamCheck = false   -- If set to true then the script would create tracers only for the enemy team members.
+_G.TeamCheck = false   -- If set to true, the script will create tracers only for the enemy team members.
 
 --[!]-- ONLY ONE OF THESE VALUES SHOULD BE SET TO TRUE TO NOT ERROR THE SCRIPT --[!]--
 
@@ -40,13 +40,14 @@ _G.FromMouse = false   -- If set to true, the tracers will come from the positio
 _G.FromCenter = false   -- If set to true, the tracers will come from the center of your screen.
 _G.FromBottom = true   -- If set to true, the tracers will come from the bottom of your screen.
 
-_G.TracersVisible = true   -- If set to true then the tracers will be visible and vice versa.
+_G.TracersVisible = true   -- If set to true, the tracers will be visible and vice versa.
 _G.TracerColor = Color3.fromRGB(255, 80, 10)   -- The color that the tracers would appear as.
 _G.TracerThickness = 1   -- The thickness of the tracers.
 _G.TracerTransparency = 0.7   -- The transparency of the tracers.
 
-_G.ModeSkipKey = Enum.KeyCode.E   -- The key that changes between modes that indicate where will the tracers come from.
-_G.DisableKey = Enum.KeyCode.Q   -- The key that disables / enables the tracers.
+-- Keybinds (can be customized)
+_G.ModeSkipKey = Enum.KeyCode.E   -- The key that changes between modes for tracers
+_G.DisableKey = Enum.KeyCode.Q   -- The key that disables / enables the tracers
 
 local function CreateTracers()
     for _, v in next, Players:GetPlayers() do
@@ -196,58 +197,34 @@ UserInputService.InputBegan:Connect(function(Input)
             if _G.SendNotifications == true then
                 game:GetService("StarterGui"):SetCore("SendNotification",{
                     Title = "Aetherial Hub";
-                    Text = "Tracers will be now coming from the position of your mouse cursor on your screen (Mode 3)";
+                    Text = "Tracers will be now coming from the position of your mouse (Mode 3)";
+                    Duration = 5;
+                })
+            end
+        elseif _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false and _G.TracersVisible == true then
+            _G.FromCenter = false
+            _G.FromBottom = false
+            _G.FromMouse = false
+
+            if _G.SendNotifications == true then
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "Aetherial Hub";
+                    Text = "Tracers will now be invisible (Mode 4)";
                     Duration = 5;
                 })
             end
         end
     elseif Input.KeyCode == _G.DisableKey and Typing == false then
-        _G.TracersVisible = not _G.TracersVisible
-        
+        TracersEnabled = not TracersEnabled
+
         if _G.SendNotifications == true then
             game:GetService("StarterGui"):SetCore("SendNotification",{
                 Title = "Aetherial Hub";
-                Text = "The tracers' visibility is now set to " .. tostring(_G.TracersVisible) .. ".";
+                Text = "Tracers are now set to " .. tostring(TracersEnabled) .. ".";
                 Duration = 5;
             })
         end
     end
 end)
 
-if _G.DefaultSettings == true then
-    _G.TeamCheck = false
-    _G.FromMouse = false
-    _G.FromCenter = false
-    _G.FromBottom = true
-    _G.TracersVisible = true
-    _G.TracerColor = Color3.fromRGB(40, 90, 255)
-    _G.TracerThickness = 1
-    _G.TracerTransparency = 0.5
-    _G.ModeSkipKey = Enum.KeyCode.E
-    _G.DisableKey = Enum.KeyCode.Q
-end
-
-local Success, Errored = pcall(function()
-    CreateTracers()
-end)
-
-if Success and not Errored then
-    if _G.SendNotifications == true then
-        game:GetService("StarterGui"):SetCore("SendNotification",{
-            Title = "Aetherial Hub";
-            Text = "Tracer script has successfully loaded.";
-            Duration = 5;
-        })
-    end
-elseif Errored and not Success then
-    if _G.SendNotifications == true then
-        game:GetService("StarterGui"):SetCore("SendNotification",{
-            Title = "Aetherial Hub";
-            Text = "Tracer script has errored while loading, please check the developer console! (F9)";
-            Duration = 5;
-        })
-    end
-    TestService:Message("The script has fucked up, please add aethrspooky with the fucking information: :")
-    warn(Errored)
-    print("!! IF THE ERROR IS A FALSE POSITIVE (says that a player cannot be found) THEN DO NOT FUCKING WHINE TO NATE")
-end
+CreateTracers()
