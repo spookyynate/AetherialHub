@@ -55,7 +55,10 @@ _G.DisableKey = defaultSettings.DisableKey
 -- Create the GUI
 local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
-local textBox = Instance.new("TextBox")
+local modeSkipKeyLabel = Instance.new("TextLabel")
+local modeSkipKeyInput = Instance.new("TextBox")
+local disableKeyLabel = Instance.new("TextLabel")
+local disableKeyInput = Instance.new("TextBox")
 local applyButton = Instance.new("TextButton")
 
 screenGui.Name = "AetherialHubGUI"
@@ -66,51 +69,87 @@ frame.Position = UDim2.new(0.5, -150, 0.5, -100)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.Parent = screenGui
 
-textBox.Size = UDim2.new(0, 200, 0, 50)
-textBox.Position = UDim2.new(0.5, -100, 0.2, 0)
-textBox.Text = "Press Key..."
-textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-textBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-textBox.Parent = frame
+modeSkipKeyLabel.Size = UDim2.new(0, 150, 0, 50)
+modeSkipKeyLabel.Position = UDim2.new(0.1, 0, 0.2, 0)
+modeSkipKeyLabel.Text = "Mode Skip Key:"
+modeSkipKeyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+modeSkipKeyLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+modeSkipKeyLabel.Parent = frame
+
+modeSkipKeyInput.Size = UDim2.new(0, 100, 0, 50)
+modeSkipKeyInput.Position = UDim2.new(0.5, -50, 0.2, 0)
+modeSkipKeyInput.Text = _G.ModeSkipKey.Name
+modeSkipKeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+modeSkipKeyInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+modeSkipKeyInput.Parent = frame
+
+disableKeyLabel.Size = UDim2.new(0, 150, 0, 50)
+disableKeyLabel.Position = UDim2.new(0.1, 0, 0.7, 0)
+disableKeyLabel.Text = "Disable Key:"
+disableKeyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+disableKeyLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+disableKeyLabel.Parent = frame
+
+disableKeyInput.Size = UDim2.new(0, 100, 0, 50)
+disableKeyInput.Position = UDim2.new(0.5, -50, 0.7, 0)
+disableKeyInput.Text = _G.DisableKey.Name
+disableKeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+disableKeyInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+disableKeyInput.Parent = frame
 
 applyButton.Size = UDim2.new(0, 100, 0, 50)
-applyButton.Position = UDim2.new(0.5, -50, 0.7, 0)
+applyButton.Position = UDim2.new(0.5, -50, 0.9, 0)
 applyButton.Text = "Apply"
 applyButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
 applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 applyButton.Parent = frame
 
 -- Function to handle key input
-local function onInput(input)
-    if input.KeyCode then
-        textBox.Text = input.KeyCode.Name
-        return Enum.KeyCode[input.KeyCode.Name]
+local function onKeyInput(input)
+    local keyName = Enum.KeyCode[input.KeyCode.Name]
+    if keyName then
+        return keyName
     end
 end
 
 -- Function to apply the new key settings
 local function applyKeySettings()
-    local key = Enum.KeyCode[textBox.Text]
-    if key then
-        _G.ModeSkipKey = key
-        _G.DisableKey = key
-        StarterGui:SetCore("SendNotification", {
-            Title = "Aetherial Hub",
-            Text = "Key bindings updated to: " .. textBox.Text,
-            Duration = 5,
-        })
+    local modeKey = Enum.KeyCode[modeSkipKeyInput.Text]
+    local disableKey = Enum.KeyCode[disableKeyInput.Text]
+    
+    if modeKey then
+        _G.ModeSkipKey = modeKey
     else
         StarterGui:SetCore("SendNotification", {
             Title = "Aetherial Hub",
-            Text = "Invalid key. Please enter a valid key.",
+            Text = "Invalid Mode Skip Key. Please enter a valid key.",
             Duration = 5,
         })
     end
+    
+    if disableKey then
+        _G.DisableKey = disableKey
+    else
+        StarterGui:SetCore("SendNotification", {
+            Title = "Aetherial Hub",
+            Text = "Invalid Disable Key. Please enter a valid key.",
+            Duration = 5,
+        })
+    end
+    
+    StarterGui:SetCore("SendNotification", {
+        Title = "Aetherial Hub",
+        Text = "Key bindings updated. Mode Skip Key: " .. _G.ModeSkipKey.Name .. ", Disable Key: " .. _G.DisableKey.Name,
+        Duration = 5,
+    })
 end
 
 -- Connect input events
-UserInputService.InputBegan:Connect(onInput)
 applyButton.MouseButton1Click:Connect(applyKeySettings)
+
+-- Update GUI with default key values
+modeSkipKeyInput.Text = _G.ModeSkipKey.Name
+disableKeyInput.Text = _G.DisableKey.Name
 
 local function CreateTracers()
     -- ... (existing tracer code)
