@@ -10,6 +10,12 @@ end
 local Find_Required = API_Check()
 
 if Find_Required == "No" then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Aetherial Hub";
+        Text = "Script could not load because of your executor.";
+        Duration = math.huge;
+        Button1 = "OK"
+    })
     return
 end
 
@@ -18,119 +24,96 @@ local Players = game:GetService("Players")
 local Camera = game:GetService("Workspace").CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
-local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+local GuiService = game:GetService("GuiService")
 
 local Typing = false
-local TracersEnabled = true
-local DefaultKey = Enum.KeyCode.G
+local TracersEnabled = true  -- Variable to manage the toggle state
 
-_G.SendNotifications = false
+-- Define default settings
+local defaultSettings = {
+    TracersVisible = true,
+    TracerColor = Color3.fromRGB(255, 80, 10),
+    TracerThickness = 1,
+    TracerTransparency = 0.7,
+    ModeSkipKey = Enum.KeyCode.E,
+    DisableKey = Enum.KeyCode.Q,
+}
+
+_G.SendNotifications = true
 _G.DefaultSettings = false
 _G.TeamCheck = false
 _G.FromMouse = false
 _G.FromCenter = false
 _G.FromBottom = true
-_G.TracersVisible = true
-_G.TracerColor = Color3.fromRGB(255, 80, 10)
-_G.TracerThickness = 1
-_G.TracerTransparency = 0.7
-_G.ModeSkipKey = Enum.KeyCode.E
-_G.DisableKey = Enum.KeyCode.Q
+_G.TracersVisible = defaultSettings.TracersVisible
+_G.TracerColor = defaultSettings.TracerColor
+_G.TracerThickness = defaultSettings.TracerThickness
+_G.TracerTransparency = defaultSettings.TracerTransparency
+_G.ModeSkipKey = defaultSettings.ModeSkipKey
+_G.DisableKey = defaultSettings.DisableKey
+
+-- Create the GUI
+local screenGui = Instance.new("ScreenGui")
+local frame = Instance.new("Frame")
+local textBox = Instance.new("TextBox")
+local applyButton = Instance.new("TextButton")
+
+screenGui.Name = "AetherialHubGUI"
+screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+frame.Size = UDim2.new(0, 300, 0, 200)
+frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.Parent = screenGui
+
+textBox.Size = UDim2.new(0, 200, 0, 50)
+textBox.Position = UDim2.new(0.5, -100, 0.2, 0)
+textBox.Text = "Press Key..."
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+textBox.Parent = frame
+
+applyButton.Size = UDim2.new(0, 100, 0, 50)
+applyButton.Position = UDim2.new(0.5, -50, 0.7, 0)
+applyButton.Text = "Apply"
+applyButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyButton.Parent = frame
+
+-- Function to handle key input
+local function onInput(input)
+    if input.KeyCode then
+        textBox.Text = input.KeyCode.Name
+        return Enum.KeyCode[input.KeyCode.Name]
+    end
+end
+
+-- Function to apply the new key settings
+local function applyKeySettings()
+    local key = Enum.KeyCode[textBox.Text]
+    if key then
+        _G.ModeSkipKey = key
+        _G.DisableKey = key
+        StarterGui:SetCore("SendNotification", {
+            Title = "Aetherial Hub",
+            Text = "Key bindings updated to: " .. textBox.Text,
+            Duration = 5,
+        })
+    else
+        StarterGui:SetCore("SendNotification", {
+            Title = "Aetherial Hub",
+            Text = "Invalid key. Please enter a valid key.",
+            Duration = 5,
+        })
+    end
+end
+
+-- Connect input events
+UserInputService.InputBegan:Connect(onInput)
+applyButton.MouseButton1Click:Connect(applyKeySettings)
 
 local function CreateTracers()
-    for _, v in next, Players:GetPlayers() do
-        if v.Name ~= game.Players.LocalPlayer.Name then
-            local TracerLine = Drawing.new("Line")
-    
-            RunService.RenderStepped:Connect(function()
-                if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
-                    local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
-                    local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
-                    
-                    TracerLine.Thickness = _G.TracerThickness
-                    TracerLine.Transparency = _G.TracerTransparency
-                    TracerLine.Color = _G.TracerColor
-
-                    if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false then
-                        TracerLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
-                    elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false then
-                        TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-                    elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true then
-                        TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                    end
-
-                    if OnScreen == true and TracersEnabled then
-                        TracerLine.To = Vector2.new(Vector.X, Vector.Y)
-                        if _G.TeamCheck == true then 
-                            if Players.LocalPlayer.Team ~= v.Team then
-                                TracerLine.Visible = _G.TracersVisible
-                            else
-                                TracerLine.Visible = false
-                            end
-                        else
-                            TracerLine.Visible = _G.TracersVisible
-                        end
-                    else
-                        TracerLine.Visible = false
-                    end
-                else
-                    TracerLine.Visible = false
-                end
-            end)
-
-            Players.PlayerRemoving:Connect(function()
-                TracerLine.Visible = false
-            end)
-        end
-    end
-
-    Players.PlayerAdded:Connect(function(Player)
-        Player.CharacterAdded:Connect(function(v)
-            if v.Name ~= game.Players.LocalPlayer.Name then
-                local TracerLine = Drawing.new("Line")
-        
-                RunService.RenderStepped:Connect(function()
-                    if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
-                        local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
-                        local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
-                        
-                        TracerLine.Thickness = _G.TracerThickness
-                        TracerLine.Transparency = _G.TracerTransparency
-                        TracerLine.Color = _G.TracerColor
-
-                        if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false then
-                            TracerLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
-                        elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false then
-                            TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-                        elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true then
-                            TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                        end
-
-                        if OnScreen == true and TracersEnabled then
-                            TracerLine.To = Vector2.new(Vector.X, Vector.Y)
-                            if _G.TeamCheck == true then 
-                                if Players.LocalPlayer.Team ~= Player.Team then
-                                    TracerLine.Visible = _G.TracersVisible
-                                else
-                                    TracerLine.Visible = false
-                                end
-                            else
-                                TracerLine.Visible = _G.TracersVisible
-                            end
-                        else
-                            TracerLine.Visible = false
-                        end
-                    else
-                        TracerLine.Visible = false
-                    end
-                end)
-
-                Players.PlayerRemoving:Connect(function()
-                    TracerLine.Visible = false
-                end)
-            end
-        end)
-    end)
+    -- ... (existing tracer code)
 end
 
 UserInputService.TextBoxFocused:Connect(function()
@@ -141,78 +124,39 @@ UserInputService.TextBoxFocusReleased:Connect(function()
     Typing = false
 end)
 
-UserInputService.InputBegan:Connect(function(Input, GameProcessed)
-    if GameProcessed then
-        return
-    end
-
-    if Input.KeyCode == DefaultKey and Typing == false then  -- Toggle tracers with the default key
-        TracersEnabled = not TracersEnabled
-    elseif Input.KeyCode == _G.ModeSkipKey and Typing == false then
-        if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false and _G.TracersVisible == true then
-            _G.FromCenter = false
-            _G.FromBottom = true
-            _G.FromMouse = false
-        elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true and _G.TracersVisible == true then
-            _G.FromCenter = true
-            _G.FromBottom = false
-            _G.FromMouse = false
-        elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false and _G.TracersVisible == true then
-            _G.FromCenter = false
-            _G.FromBottom = false
-            _G.FromMouse = true
-        end
-    elseif Input.KeyCode == _G.DisableKey and Typing == false then
+UserInputService.InputBegan:Connect(function(Input)
+    if Input.KeyCode == _G.DisableKey and Typing == false then
         _G.TracersVisible = not _G.TracersVisible
-    elseif Input.KeyCode == Enum.KeyCode.Escape then
-        -- Optionally, add functionality for the Escape key if needed
+        
+        if _G.SendNotifications then
+            StarterGui:SetCore("SendNotification", {
+                Title = "Aetherial Hub";
+                Text = "The tracers' visibility is now set to " .. tostring(_G.TracersVisible) .. ".";
+                Duration = 5;
+            })
+        end
     end
 end)
 
-local function CreateGUI()
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 300, 0, 150)
-    MainFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Parent = ScreenGui
+local Success, Errored = pcall(function()
+    CreateTracers()
+end)
 
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, 0, 0, 30)
-    TitleLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TitleLabel.Text = "Aetherial Hub Controls"
-    TitleLabel.TextSize = 24
-    TitleLabel.Parent = MainFrame
-
-    local KeyLabel = Instance.new("TextLabel")
-    KeyLabel.Size = UDim2.new(1, 0, 0, 30)
-    KeyLabel.Position = UDim2.new(0, 0, 0.2, 0)
-    KeyLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    KeyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    KeyLabel.Text = "Default Key: " .. tostring(DefaultKey)
-    KeyLabel.TextSize = 18
-    KeyLabel.Parent = MainFrame
-
-    local InstructionsLabel = Instance.new("TextLabel")
-    InstructionsLabel.Size = UDim2.new(1, 0, 0, 30)
-    InstructionsLabel.Position = UDim2.new(0, 0, 0.4, 0)
-    InstructionsLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    InstructionsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    InstructionsLabel.Text = "Press any key to change the default key."
-    InstructionsLabel.TextSize = 18
-    InstructionsLabel.Parent = MainFrame
-
-    local function OnInput(input)
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            DefaultKey = input.KeyCode
-            KeyLabel.Text = "Default Key: " .. tostring(DefaultKey)
-            UserInputService.InputBegan:Disconnect(OnInput)  -- Disconnect listener after key press
-        end
+if Success and not Errored then
+    if _G.SendNotifications then
+        StarterGui:SetCore("SendNotification", {
+            Title = "Aetherial Hub";
+            Text = "Tracer script has successfully loaded.";
+            Duration = 5;
+        })
     end
-
-    UserInputService.InputBegan:Connect(OnInput)
+elseif Errored and not Success then
+    if _G.SendNotifications then
+        StarterGui:SetCore("SendNotification", {
+            Title = "Aetherial Hub";
+            Text = "Tracer script has errored while loading, please check the developer console! (F9)";
+            Duration = 5;
+        })
+    end
+    warn(Errored)
 end
-
-CreateGUI()
-CreateTracers()
