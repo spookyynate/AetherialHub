@@ -1,4 +1,35 @@
--- Ensure Drawing API is available
+-- Load the Luminosity UI library
+local Luminosity = loadstring(game:HttpGet("https://raw.githubusercontent.com/iHavoc101/Genesis-Studios/main/UserInterface/Luminosity.lua", true))()
+
+-- Create a new Luminosity window
+local Window = Luminosity.new("Aetherial Hub", "v1.0.0", 4370345701)
+
+-- Create a tab for options
+local Tab1 = Window.Tab("ESP Settings", 6026568198)
+local Folder = Tab1.Folder("Options", "Control ESP visibility")
+
+-- Add a button to toggle ESP
+local TracersEnabled = true
+
+Folder.Button("Toggle Tracers", function()
+    TracersEnabled = not TracersEnabled
+    _G.TracersVisible = TracersEnabled
+    
+    -- Notify the user
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Aetherial Hub",
+        Text = "Tracers visibility is now " .. (TracersEnabled and "Enabled" or "Disabled"),
+        Duration = 5,
+    })
+end)
+
+-- Initialize Tracer logic
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Camera = game:GetService("Workspace").CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+
+-- Check Drawing API availability
 local function API_Check()
     return Drawing and "Yes" or "No"
 end
@@ -6,74 +37,14 @@ end
 local Find_Required = API_Check()
 
 if Find_Required == "No" then
-    game:GetService("StarterGui"):SetCore("SendNotification",{
-        Title = "Exunys Developer";
-        Text = "Tracer script could not be loaded because your exploit is unsupported.";
-        Duration = math.huge;
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Exunys Developer",
+        Text = "Tracer script could not be loaded because your exploit is unsupported.",
+        Duration = math.huge,
         Button1 = "OK"
     })
     return
 end
-
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local Camera = game:GetService("Workspace").CurrentCamera
-local UserInputService = game:GetService("UserInputService")
-
-local Typing = false
-local TracersEnabled = true
-
-_G.SendNotifications = true
-_G.TracersVisible = true
-_G.TracerColor = Color3.fromRGB(255, 80, 10)
-_G.TracerThickness = 1
-_G.TracerTransparency = 0.7
-_G.FromMouse = false
-_G.FromCenter = false
-_G.FromBottom = true
-_G.TeamCheck = false
-
--- Create GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Aetherial Hub"
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 150)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
-
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, 0, 0, 40)
-TitleLabel.BackgroundColor3 = Color3.fromRGB(50, 0, 50)
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.Text = "Aetherial Hub"
-TitleLabel.TextScaled = true
-TitleLabel.Parent = MainFrame
-
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(1, 0, 0, 60)
-ToggleButton.Position = UDim2.new(0, 0, 0.2, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(100, 0, 100)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "Toggle Tracers"
-ToggleButton.TextScaled = true
-ToggleButton.Parent = MainFrame
-
-ToggleButton.MouseButton1Click:Connect(function()
-    TracersEnabled = not TracersEnabled
-    _G.TracersVisible = TracersEnabled
-
-    if _G.SendNotifications then
-        game:GetService("StarterGui"):SetCore("SendNotification",{
-            Title = "Aetherial Hub";
-            Text = "Tracers visibility is now set to " .. tostring(_G.TracersVisible) .. ".";
-            Duration = 5;
-        })
-    end
-end)
 
 local function CreateTracers()
     for _, player in ipairs(Players:GetPlayers()) do
