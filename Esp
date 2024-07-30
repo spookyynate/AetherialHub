@@ -154,17 +154,7 @@ UserInputService.TextBoxFocusReleased:Connect(function()
 end)
 
 UserInputService.InputBegan:Connect(function(Input)
-    if Input.KeyCode == Enum.KeyCode.G and Typing == false then  -- Toggle tracers with G key
-        TracersEnabled = not TracersEnabled
-
-        if _G.SendNotifications == true then
-            game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "Aetherial Hub";
-                Text = "The tracer is now set to " .. tostring(TracersEnabled) .. ".";
-                Duration = 5;
-            })
-        end
-    elseif Input.KeyCode == _G.ModeSkipKey and Typing == false then
+    if Input.KeyCode == _G.ModeSkipKey and Typing == false then
         if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false and _G.TracersVisible == true then
             _G.FromCenter = false
             _G.FromBottom = true
@@ -221,6 +211,45 @@ UserInputService.InputBegan:Connect(function(Input)
             game:GetService("StarterGui"):SetCore("SendNotification",{
                 Title = "Aetherial Hub";
                 Text = "Tracers are now set to " .. tostring(TracersEnabled) .. ".";
+                Duration = 5;
+            })
+        end
+    end
+end)
+
+-- Chat Command Handler
+Players.LocalPlayer.Chatted:Connect(function(message)
+    local args = string.split(message, " ")
+    local command = args[1]
+
+    if command == "/keybind" and #args == 2 then
+        local newKeybind = Enum.KeyCode[args[2]]  -- Get the KeyCode from the command argument
+        if newKeybind then
+            if _G.DisableKey == newKeybind then
+                _G.DisableKey = newKeybind
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "Aetherial Hub";
+                    Text = "Disable Keybind changed to " .. tostring(newKeybind);
+                    Duration = 5;
+                })
+            elseif _G.ModeSkipKey == newKeybind then
+                _G.ModeSkipKey = newKeybind
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "Aetherial Hub";
+                    Text = "Mode Skip Keybind changed to " .. tostring(newKeybind);
+                    Duration = 5;
+                })
+            else
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "Aetherial Hub";
+                    Text = "Invalid keybind.";
+                    Duration = 5;
+                })
+            end
+        else
+            game:GetService("StarterGui"):SetCore("SendNotification",{
+                Title = "Aetherial Hub";
+                Text = "Invalid keybind.";
                 Duration = 5;
             })
         end
