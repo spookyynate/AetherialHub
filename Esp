@@ -55,8 +55,8 @@ local function CreateESP()
     for _, v in next, Players:GetPlayers() do
         if v.Name ~= game.Players.LocalPlayer.Name then
             local TracerLine = Drawing.new("Line")
-            local OuterGlow = Drawing.new("Square")
-            local BodyFill = Drawing.new("Square")
+            local BoxOutline = Drawing.new("Square")
+            local BoxFill = Drawing.new("Square")
 
             RunService.RenderStepped:Connect(function()
                 if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
@@ -87,7 +87,7 @@ local function CreateESP()
                             TracerLine.Visible = _G.TracersVisible
                         end
                         
-                        -- Update Outer Glow and Body Fill
+                        -- Update Box Outline and Box Fill
                         local Character = workspace:FindFirstChild(v.Name)
                         if Character and Character:FindFirstChild("HumanoidRootPart") then
                             local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
@@ -98,42 +98,43 @@ local function CreateESP()
                             local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head_Position * CFrame.new(0, -Head_Size.Y, 0).p)
                             
                             if HRP_OnScreen and Head_OnScreen then
-                                OuterGlow.Visible = true
-                                OuterGlow.Color = _G.OuterGlowColor
-                                OuterGlow.Thickness = 3
-                                OuterGlow.Transparency = 0.7
-                                OuterGlow.Size = Vector2.new(30, 60)
-                                OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
+                                local BoxSize = Vector2.new(100, 200) -- Adjust size as needed
+                                BoxOutline.Visible = true
+                                BoxOutline.Color = _G.OuterGlowColor
+                                BoxOutline.Thickness = 3
+                                BoxOutline.Transparency = 0.7
+                                BoxOutline.Size = BoxSize
+                                BoxOutline.Position = Vector2.new(HRP_Vector.X - BoxSize.X / 2, HRP_Vector.Y - BoxSize.Y / 2)
                                 
-                                BodyFill.Visible = true
-                                BodyFill.Color = _G.FillColor
-                                BodyFill.Transparency = 0.5
-                                BodyFill.Size = Vector2.new(28, 58)
-                                BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
+                                BoxFill.Visible = true
+                                BoxFill.Color = _G.FillColor
+                                BoxFill.Transparency = 0.5
+                                BoxFill.Size = BoxSize
+                                BoxFill.Position = Vector2.new(HRP_Vector.X - BoxSize.X / 2, HRP_Vector.Y - BoxSize.Y / 2)
                             else
-                                OuterGlow.Visible = false
-                                BodyFill.Visible = false
+                                BoxOutline.Visible = false
+                                BoxFill.Visible = false
                             end
                         else
-                            OuterGlow.Visible = false
-                            BodyFill.Visible = false
+                            BoxOutline.Visible = false
+                            BoxFill.Visible = false
                         end
                     else
                         TracerLine.Visible = false
-                        OuterGlow.Visible = false
-                        BodyFill.Visible = false
+                        BoxOutline.Visible = false
+                        BoxFill.Visible = false
                     end
                 else
                     TracerLine.Visible = false
-                    OuterGlow.Visible = false
-                    BodyFill.Visible = false
+                    BoxOutline.Visible = false
+                    BoxFill.Visible = false
                 end
             end)
 
             Players.PlayerRemoving:Connect(function()
                 TracerLine.Visible = false
-                OuterGlow.Visible = false
-                BodyFill.Visible = false
+                BoxOutline.Visible = false
+                BoxFill.Visible = false
             end)
         end
     end
@@ -142,8 +143,8 @@ local function CreateESP()
         Player.CharacterAdded:Connect(function(v)
             if v.Name ~= game.Players.LocalPlayer.Name then
                 local TracerLine = Drawing.new("Line")
-                local OuterGlow = Drawing.new("Square")
-                local BodyFill = Drawing.new("Square")
+                local BoxOutline = Drawing.new("Square")
+                local BoxFill = Drawing.new("Square")
 
                 RunService.RenderStepped:Connect(function()
                     if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
@@ -165,7 +166,7 @@ local function CreateESP()
                         if OnScreen == true and TracersEnabled then
                             TracerLine.To = Vector2.new(Vector.X, Vector.Y)
                             if _G.TeamCheck == true then 
-                                if Players.LocalPlayer.Team ~= Player.Team then
+                                if Players.LocalPlayer.Team ~= v.Team then
                                     TracerLine.Visible = _G.TracersVisible
                                 else
                                     TracerLine.Visible = false
@@ -173,9 +174,9 @@ local function CreateESP()
                             else
                                 TracerLine.Visible = _G.TracersVisible
                             end
-
-                            -- Update Outer Glow and Body Fill
-                            local Character = workspace:FindFirstChild(Player.Name)
+                            
+                            -- Update Box Outline and Box Fill
+                            local Character = workspace:FindFirstChild(v.Name)
                             if Character and Character:FindFirstChild("HumanoidRootPart") then
                                 local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
                                 local Head = Character:FindFirstChild("Head")
@@ -185,42 +186,43 @@ local function CreateESP()
                                 local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head_Position * CFrame.new(0, -Head_Size.Y, 0).p)
                                 
                                 if HRP_OnScreen and Head_OnScreen then
-                                    OuterGlow.Visible = true
-                                    OuterGlow.Color = _G.OuterGlowColor
-                                    OuterGlow.Thickness = 3
-                                    OuterGlow.Transparency = 0.7
-                                    OuterGlow.Size = Vector2.new(30, 60)
-                                    OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
+                                    local BoxSize = Vector2.new(100, 200) -- Adjust size as needed
+                                    BoxOutline.Visible = true
+                                    BoxOutline.Color = _G.OuterGlowColor
+                                    BoxOutline.Thickness = 3
+                                    BoxOutline.Transparency = 0.7
+                                    BoxOutline.Size = BoxSize
+                                    BoxOutline.Position = Vector2.new(HRP_Vector.X - BoxSize.X / 2, HRP_Vector.Y - BoxSize.Y / 2)
                                     
-                                    BodyFill.Visible = true
-                                    BodyFill.Color = _G.FillColor
-                                    BodyFill.Transparency = 0.5
-                                    BodyFill.Size = Vector2.new(28, 58)
-                                    BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
+                                    BoxFill.Visible = true
+                                    BoxFill.Color = _G.FillColor
+                                    BoxFill.Transparency = 0.5
+                                    BoxFill.Size = BoxSize
+                                    BoxFill.Position = Vector2.new(HRP_Vector.X - BoxSize.X / 2, HRP_Vector.Y - BoxSize.Y / 2)
                                 else
-                                    OuterGlow.Visible = false
-                                    BodyFill.Visible = false
+                                    BoxOutline.Visible = false
+                                    BoxFill.Visible = false
                                 end
                             else
-                                OuterGlow.Visible = false
-                                BodyFill.Visible = false
+                                BoxOutline.Visible = false
+                                BoxFill.Visible = false
                             end
                         else
                             TracerLine.Visible = false
-                            OuterGlow.Visible = false
-                            BodyFill.Visible = false
+                            BoxOutline.Visible = false
+                            BoxFill.Visible = false
                         end
                     else
                         TracerLine.Visible = false
-                        OuterGlow.Visible = false
-                        BodyFill.Visible = false
+                        BoxOutline.Visible = false
+                        BoxFill.Visible = false
                     end
                 end)
 
                 Players.PlayerRemoving:Connect(function()
                     TracerLine.Visible = false
-                    OuterGlow.Visible = false
-                    BodyFill.Visible = false
+                    BoxOutline.Visible = false
+                    BoxFill.Visible = false
                 end)
             end
         end)
