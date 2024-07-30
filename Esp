@@ -222,21 +222,30 @@ Players.LocalPlayer.Chatted:Connect(function(message)
     local args = string.split(message, " ")
     local command = args[1]
 
-    if command == "/keybind" and #args == 2 then
-        local newKeybind = Enum.KeyCode[args[2]]  -- Get the KeyCode from the command argument
+    if command:lower() == "/keybind" and #args == 2 then
+        local keyName = args[2]:upper()
+        local newKeybind = Enum.KeyCode[keyName]
+
         if newKeybind then
-            if _G.DisableKey == newKeybind then
+            if newKeybind ~= _G.DisableKey and newKeybind ~= _G.ModeSkipKey then
                 _G.DisableKey = newKeybind
                 game:GetService("StarterGui"):SetCore("SendNotification",{
                     Title = "Aetherial Hub";
                     Text = "Disable Keybind changed to " .. tostring(newKeybind);
                     Duration = 5;
                 })
-            elseif _G.ModeSkipKey == newKeybind then
+            elseif newKeybind == _G.DisableKey then
+                _G.DisableKey = newKeybind
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "Aetherial Hub";
+                    Text = "Disable Keybind already set to " .. tostring(newKeybind);
+                    Duration = 5;
+                })
+            elseif newKeybind == _G.ModeSkipKey then
                 _G.ModeSkipKey = newKeybind
                 game:GetService("StarterGui"):SetCore("SendNotification",{
                     Title = "Aetherial Hub";
-                    Text = "Mode Skip Keybind changed to " .. tostring(newKeybind);
+                    Text = "Mode Skip Keybind already set to " .. tostring(newKeybind);
                     Duration = 5;
                 })
             else
