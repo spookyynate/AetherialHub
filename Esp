@@ -11,7 +11,7 @@ local Find_Required = API_Check()
 
 if Find_Required == "No" then
     game:GetService("StarterGui"):SetCore("SendNotification",{
-        Title = "Exunys Developer";
+        Title = "Aetherial Hub";
         Text = "Tracer script could not be loaded because your exploit is unsupported.";
         Duration = math.huge;
         Button1 = "OK"
@@ -158,7 +158,7 @@ UserInputService.InputBegan:Connect(function(Input)
 
         if _G.SendNotifications == true then
             game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "Exunys Developer";
+                Title = "Aetherial Hub";
                 Text = "The tracers' visibility is now set to " .. tostring(TracersEnabled) .. ".";
                 Duration = 5;
             })
@@ -171,7 +171,7 @@ UserInputService.InputBegan:Connect(function(Input)
 
             if _G.SendNotifications == true then
                 game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "Exunys Developer";
+                    Title = "Aetherial Hub";
                     Text = "Tracers will be now coming from the bottom of your screen (Mode 1)";
                     Duration = 5;
                 })
@@ -183,7 +183,7 @@ UserInputService.InputBegan:Connect(function(Input)
 
             if _G.SendNotifications == true then
                 game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "Exunys Developer";
+                    Title = "Aetherial Hub";
                     Text = "Tracers will be now coming from the center of your screen (Mode 2)";
                     Duration = 5;
                 })
@@ -195,7 +195,7 @@ UserInputService.InputBegan:Connect(function(Input)
 
             if _G.SendNotifications == true then
                 game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "Exunys Developer";
+                    Title = "Aetherial Hub";
                     Text = "Tracers will be now coming from the position of your mouse cursor on your screen (Mode 3)";
                     Duration = 5;
                 })
@@ -206,7 +206,7 @@ UserInputService.InputBegan:Connect(function(Input)
         
         if _G.SendNotifications == true then
             game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "Exunys Developer";
+                Title = "Aetherial Hub";
                 Text = "The tracers' visibility is now set to " .. tostring(_G.TracersVisible) .. ".";
                 Duration = 5;
             })
@@ -234,7 +234,7 @@ end)
 if Success and not Errored then
     if _G.SendNotifications == true then
         game:GetService("StarterGui"):SetCore("SendNotification",{
-            Title = "Exunys Developer";
+            Title = "Aetherial Hub";
             Text = "Tracer script has successfully loaded.";
             Duration = 5;
         })
@@ -242,12 +242,12 @@ if Success and not Errored then
 elseif Errored and not Success then
     if _G.SendNotifications == true then
         game:GetService("StarterGui"):SetCore("SendNotification",{
-            Title = "Exunys Developer";
+            Title = "Aetherial Hub";
             Text = "Tracer script has errored while loading, please check the developer console! (F9)";
             Duration = 5;
         })
     end
-    TestService:Message("The tracer script has errored, please notify Exunys with the following information :")
+    TestService:Message("The script has fucked up, please add aethrspooky with the fucking information: :")
     warn(Errored)
-    print("!! IF THE ERROR IS A FALSE POSITIVE (says that a player cannot be found) THEN DO NOT BOTHER !!")
+    print("!! IF THE ERROR IS A FALSE POSITIVE (says that a player cannot be found) THEN DO NOT FUCKING WHINE TO NATE")
 end
