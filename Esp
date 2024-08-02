@@ -104,10 +104,6 @@ local player = game:GetService("Players").LocalPlayer
 local camera = game:GetService("Workspace").CurrentCamera
 local mouse = player:GetMouse()
 
--- New variables for ESP toggle
-local ESPEnabled = true
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 100, 0, 50)
@@ -336,34 +332,31 @@ game:GetService("Players").PlayerAdded:Connect(function(Player)
    end)
 end)
 
--- Modify the ToggleESP function to work with the GUI button
-    local function ToggleESP()
-        ESPEnabled = not ESPEnabled
-       
-        -- Toggle visibility for all ESP elements
-        for _, v in pairs(game:GetService("Players"):GetPlayers()) do
-            if v.Name ~= player.Name and v.Character then
-                Visibility(ESPEnabled, v.Character)
-            end
+-- New function to toggle ESP
+local function ToggleESP()
+    ESPEnabled = not ESPEnabled
+   
+    -- Toggle visibility for all ESP elements
+    for _, v in pairs(game:GetService("Players"):GetPlayers()) do
+        if v.Name ~= player.Name and v.Character then
+            Visibility(ESPEnabled, v.Character)
         end
-       
-        -- Toggle outline visibility
-        for _, highlight in pairs(Folder:GetChildren()) do
-            if highlight:IsA("Highlight") then
-                highlight.Enabled = ESPEnabled
-            end
-        end
-       
-        -- Toggle nametag visibility
-        for _, billboardGui in pairs(Folder:GetChildren()) do
-            if billboardGui:IsA("BillboardGui") then
-                billboardGui.Enabled = ESPEnabled
-            end
-        end
-    
-        -- Update button text
-        ToggleButton.Text = ESPEnabled and "Disable ESP" or "Enable ESP"
     end
-    
-    -- Connect the ToggleESP function to the GUI button
-    ToggleButton.MouseButton1Click:Connect(ToggleESP)
+   
+    -- Toggle outline visibility
+    for _, highlight in pairs(Folder:GetChildren()) do
+        if highlight:IsA("Highlight") then
+            highlight.Enabled = ESPEnabled
+        end
+    end
+   
+    -- Toggle nametag visibility
+    for _, billboardGui in pairs(Folder:GetChildren()) do
+        if billboardGui:IsA("BillboardGui") then
+            billboardGui.Enabled = ESPEnabled
+        end
+    end
+end
+
+-- Connect the ToggleESP function to the button
+ToggleButton.MouseButton1Click:Connect(ToggleESP)
