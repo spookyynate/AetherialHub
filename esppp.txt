@@ -163,12 +163,6 @@ local TextFont = Enum.Font.RobotoMono
 local NameColor = Color3.fromRGB(255, 255, 255)
 local NamePositioning = false
 
---[[
-   By Polarrr#0001 :)
-   https://v3rmillion.net/member.php?action=profile&uid=2340618
---]]
-
---// Don't Touch!
 local Folder = Instance.new("Folder", game:GetService("CoreGui"))
 Folder.Name = ""
 
