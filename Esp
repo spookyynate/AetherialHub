@@ -7,29 +7,16 @@ local Settings = {
     Tracer_FollowMouse = false,
     Tracers = true
 }
-
 local Team_Check = {
     TeamCheck = false,
     Green = Color3.fromRGB(0, 255, 0),
     Red = Color3.fromRGB(255, 0, 0)
 }
-
 local TeamColor = true
 
 local player = game:GetService("Players").LocalPlayer
 local camera = game:GetService("Workspace").CurrentCamera
 local mouse = player:GetMouse()
-
--- New variables for ESP toggle
-local ESPEnabled = true
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 100, 0, 50)
-ToggleButton.Position = UDim2.new(0.9, -50, 0.1, 0)
-ToggleButton.Text = "Toggle ESP"
-ToggleButton.Parent = ScreenGui
 
 local function NewQuad(thickness, color)
     local quad = Drawing.new("Quad")
@@ -50,7 +37,7 @@ local function NewLine(thickness, color)
     line.Visible = false
     line.From = Vector2.new(0, 0)
     line.To = Vector2.new(0, 0)
-    line.Color = color
+    line.Color = color 
     line.Thickness = thickness
     line.Transparency = 1
     return line
@@ -58,9 +45,7 @@ end
 
 local function Visibility(state, lib)
     for u, x in pairs(lib) do
-        if x.Visible ~= nil then
-            x.Visible = state and ESPEnabled
-        end
+        x.Visible = state
     end
 end
 
@@ -93,10 +78,10 @@ local function ESP(plr)
         connection = game:GetService("RunService").RenderStepped:Connect(function()
             if plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") ~= nil and plr.Character:FindFirstChild("HumanoidRootPart") ~= nil and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") ~= nil then
                 local HumPos, OnScreen = camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
-                if OnScreen and ESPEnabled then
+                if OnScreen then
                     local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
                     local DistanceY = math.clamp((Vector2.new(head.X, head.Y) - Vector2.new(HumPos.X, HumPos.Y)).magnitude, 2, math.huge)
-                   
+                    
                     local function Size(item)
                         item.PointA = Vector2.new(HumPos.X + DistanceY, HumPos.Y - DistanceY*2)
                         item.PointB = Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2)
@@ -111,7 +96,7 @@ local function ESP(plr)
                             library.tracer.From = camera.ViewportSize*0.5
                             library.blacktracer.From = camera.ViewportSize*0.5
                         elseif Settings.Tracer_Origin == "Bottom" then
-                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
+                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y) 
                             library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
                         end
                         if Settings.Tracer_FollowMouse then
@@ -120,7 +105,7 @@ local function ESP(plr)
                         end
                         library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
                         library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                    else
+                    else 
                         library.tracer.From = Vector2.new(0, 0)
                         library.blacktracer.From = Vector2.new(0, 0)
                         library.tracer.To = Vector2.new(0, 0)
@@ -130,10 +115,10 @@ local function ESP(plr)
                     if Team_Check.TeamCheck then
                         if plr.TeamColor == player.TeamColor then
                             Colorize(Team_Check.Green)
-                        else
+                        else 
                             Colorize(Team_Check.Red)
                         end
-                    else
+                    else 
                         library.tracer.Color = Settings.Tracer_Color
                         library.box.Color = Settings.Box_Color
                     end
@@ -141,10 +126,10 @@ local function ESP(plr)
                         Colorize(plr.TeamColor.Color)
                     end
                     Visibility(true, library)
-                else
+                else 
                     Visibility(false, library)
                 end
-            else
+            else 
                 Visibility(false, library)
                 if game.Players:FindFirstChild(plr.Name) == nil then
                     connection:Disconnect()
@@ -178,15 +163,20 @@ local TextFont = Enum.Font.RobotoMono
 local NameColor = Color3.fromRGB(255, 255, 255)
 local NamePositioning = false
 
+--[[
+   By Polarrr#0001 :)
+   https://v3rmillion.net/member.php?action=profile&uid=2340618
+--]]
+
+--// Don't Touch!
 local Folder = Instance.new("Folder", game:GetService("CoreGui"))
 Folder.Name = ""
 
-local function AddOutline(Character)
+AddOutline = function(Character)
    local Highlight = Instance.new("Highlight", Folder)
    
    Highlight.OutlineColor = OutlineColoring
    Highlight.Adornee = Character
-   Highlight.Enabled = ESPEnabled
    
    if OutlineFill == true then
        Highlight.FillColor = FillColoring
@@ -196,7 +186,7 @@ local function AddOutline(Character)
    end
 end
 
-local function AddNameTag(Character)
+AddNameTag = function(Character)
    local BGui = Instance.new("BillboardGui", Folder)
    local Frame = Instance.new("Frame", BGui)
    local TextLabel = Instance.new("TextLabel", Frame)
@@ -204,7 +194,6 @@ local function AddNameTag(Character)
    BGui.Adornee = Character:WaitForChild("Head")
    BGui.StudsOffset = Vector3.new(0, 3, 0)
    BGui.AlwaysOnTop = true
-   BGui.Enabled = ESPEnabled
    
    BGui.Size = UDim2.new(4, 0, 0.5, 0)
    Frame.Size = UDim2.new(1, 0, 1, 0)
