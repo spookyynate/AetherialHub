@@ -10,10 +10,10 @@ end
 local isDrawingAvailable = API_Check()
 
 if not isDrawingAvailable then
-    game:GetService("StarterGui"):SetCore("SendNotification",{
-        Title = "Aetherial Hub";
-        Text = "Script could not load because Drawing API is not available.";
-        Duration = math.huge;
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Aetherial Hub",
+        Text = "Script could not load because Drawing API is not available.",
+        Duration = math.huge,
         Button1 = "OK"
     })
     return
@@ -133,6 +133,20 @@ local function CreateESP()
     end)
 end
 
+-- Key Bindings
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.KeyCode == Enum.KeyCode.G then
+        TracersEnabled = not TracersEnabled
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Aetherial Hub",
+            Text = "ESP " .. (TracersEnabled and "Enabled" or "Disabled"),
+            Duration = 2,
+        })
+    end
+end)
+
 -- Chat Command Handler
 Players.LocalPlayer.Chatted:Connect(function(message)
     local args = string.split(message, " ")
@@ -145,15 +159,15 @@ Players.LocalPlayer.Chatted:Connect(function(message)
         if newKeybind and newKeybind ~= _G.DisableKey and newKeybind ~= _G.ModeSkipKey then
             _G.DisableKey = newKeybind
             game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "Aetherial Hub";
-                Text = "Disable Keybind changed to " .. tostring(newKeybind);
-                Duration = 5;
+                Title = "Aetherial Hub",
+                Text = "Disable Keybind changed to " .. tostring(newKeybind),
+                Duration = 5,
             })
         else
             game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "Aetherial Hub";
-                Text = "Invalid or already set keybind.";
-                Duration = 5;
+                Title = "Aetherial Hub",
+                Text = "Invalid or already set keybind.",
+                Duration = 5,
             })
         end
     elseif command == "/color" and #args == 2 then
@@ -164,22 +178,22 @@ Players.LocalPlayer.Chatted:Connect(function(message)
             if r and g and b and r >= 0 and r <= 255 and g >= 0 and g <= 255 and b >= 0 and b <= 255 then
                 _G.TracerColor = Color3.fromRGB(r, g, b)
                 game:GetService("StarterGui"):SetCore("SendNotification", {
-                    Title = "Aetherial Hub";
-                    Text = "Tracer color changed to (" .. r .. ", " .. g .. ", " .. b .. ")";
-                    Duration = 5;
+                    Title = "Aetherial Hub",
+                    Text = "Tracer color changed to (" .. r .. ", " .. g .. ", " .. b .. ")",
+                    Duration = 5,
                 })
             else
                 game:GetService("StarterGui"):SetCore("SendNotification", {
-                    Title = "Aetherial Hub";
-                    Text = "Invalid color values. Please use format R,G,B with values between 0 and 255.";
-                    Duration = 5;
+                    Title = "Aetherial Hub",
+                    Text = "Invalid color values. Please use format R,G,B with values between 0 and 255.",
+                    Duration = 5,
                 })
             end
         else
             game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "Aetherial Hub";
-                Text = "Invalid color format. Please use format R,G,B.";
-                Duration = 5;
+                Title = "Aetherial Hub",
+                Text = "Invalid color format. Please use format R,G,B.",
+                Duration = 5,
             })
         end
     end
