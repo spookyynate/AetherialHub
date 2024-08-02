@@ -1,87 +1,3 @@
--- Create a new ScreenGui
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
--- Create the main frame
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 200)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
-
--- Add a title
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 18
-Title.Text = "ESP GUI"
-Title.Parent = MainFrame
-
--- Create tab buttons
-local function CreateTab(name, position)
-    local Tab = Instance.new("TextButton")
-    Tab.Size = UDim2.new(0.33, 0, 0, 30)
-    Tab.Position = UDim2.new(0.33 * position, 0, 0, 30)
-    Tab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Tab.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Tab.Font = Enum.Font.SourceSans
-    Tab.TextSize = 14
-    Tab.Text = name
-    Tab.Parent = MainFrame
-    return Tab
-end
-
-local HomeTab = CreateTab("Home", 0)
-local ESPTab = CreateTab("ESP", 1)
-local CreditsTab = CreateTab("Credits", 2)
-
--- Create content frames
-local function CreateContent()
-    local Content = Instance.new("Frame")
-    Content.Size = UDim2.new(1, 0, 1, -60)
-    Content.Position = UDim2.new(0, 0, 0, 60)
-    Content.BackgroundTransparency = 1
-    Content.Visible = false
-    Content.Parent = MainFrame
-    return Content
-end
-
-local HomeContent = CreateContent()
-local ESPContent = CreateContent()
-local CreditsContent = CreateContent()
-
--- Add ESP toggle button to ESP tab
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0.8, 0, 0, 30)
-ToggleButton.Position = UDim2.new(0.1, 0, 0, 10)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Font = Enum.Font.SourceSans
-ToggleButton.TextSize = 14
-ToggleButton.Text = "Toggle ESP"
-ToggleButton.Parent = ESPContent
-
--- Function to switch tabs
-local function SwitchTab(tab)
-    HomeContent.Visible = (tab == HomeTab)
-    ESPContent.Visible = (tab == ESPTab)
-    CreditsContent.Visible = (tab == CreditsTab)
-end
-
-HomeTab.MouseButton1Click:Connect(function() SwitchTab(HomeTab) end)
-ESPTab.MouseButton1Click:Connect(function() SwitchTab(ESPTab) end)
-CreditsTab.MouseButton1Click:Connect(function() SwitchTab(CreditsTab) end)
-
--- Set initial tab
-SwitchTab(HomeTab)
-
--- Connect the ToggleESP function to the button
-ToggleButton.MouseButton1Click:Connect(ToggleESP)
-
-
 local Settings = {
     Box_Color = Color3.fromRGB(255, 0, 0),
     Tracer_Color = Color3.fromRGB(255, 0, 0),
@@ -104,6 +20,10 @@ local player = game:GetService("Players").LocalPlayer
 local camera = game:GetService("Workspace").CurrentCamera
 local mouse = player:GetMouse()
 
+-- New variables for ESP toggle
+local ESPEnabled = true
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 100, 0, 50)
