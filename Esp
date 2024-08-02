@@ -1,3 +1,4 @@
+-- Ensure the Drawing API is available
 local function API_Check()
     local success, result = pcall(function()
         return Drawing ~= nil
@@ -162,7 +163,7 @@ local function CreateESP()
                                 TracerLine.Visible = _G.TracersVisible
                             end
 
-                            local Character = workspace:FindFirstChild(Player.Name)
+                            local Character = workspace:FindFirstChild(v.Name)
                             if Character and Character:FindFirstChild("HumanoidRootPart") then
                                 local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
                                 local Head = Character:FindFirstChild("Head")
