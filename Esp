@@ -5,9 +5,7 @@ local Settings = {
     Box_Thickness = 1,
     Tracer_Origin = "Bottom",
     Tracer_FollowMouse = false,
-    Tracers = true,
-    Outline_Color = Color3.fromRGB(255, 255, 255),
-    Outline_Thickness = 3
+    Tracers = true
 }
 
 local Team_Check = {
@@ -53,14 +51,23 @@ local function Visibility(state, lib)
     end
 end
 
+local function ToColor3(col)
+    local r = col.r
+    local g = col.g
+    local b = col.b
+    return Color3.new(r,g,b)
+end
+
 local black = Color3.fromRGB(0, 0 ,0)
+local white = Color3.fromRGB(255, 255, 255)
+
 local function ESP(plr)
     local library = {
         blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
         tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
-        outline = NewQuad(Settings.Outline_Thickness, Settings.Outline_Color)
+        outline = NewQuad(Settings.Box_Thickness + 2, white),
     }
 
     local function Colorize(color)
@@ -88,13 +95,7 @@ local function ESP(plr)
                     end
                     Size(library.box)
                     Size(library.black)
-                    
-                    -- Size the outline slightly larger than the box
-                    local outlineOffset = 2
-                    library.outline.PointA = Vector2.new(HumPos.X + DistanceY + outlineOffset, HumPos.Y - DistanceY*2 - outlineOffset)
-                    library.outline.PointB = Vector2.new(HumPos.X - DistanceY - outlineOffset, HumPos.Y - DistanceY*2 - outlineOffset)
-                    library.outline.PointC = Vector2.new(HumPos.X - DistanceY - outlineOffset, HumPos.Y + DistanceY*2 + outlineOffset)
-                    library.outline.PointD = Vector2.new(HumPos.X + DistanceY + outlineOffset, HumPos.Y + DistanceY*2 + outlineOffset)
+                    Size(library.outline)
 
                     if Settings.Tracers then
                         if Settings.Tracer_Origin == "Middle" then
