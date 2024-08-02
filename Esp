@@ -27,8 +27,8 @@ local UserInputService = game:GetService("UserInputService")
 
 -- Initialize configuration variables
 local TracersEnabled = true
-local Typing = false
 
+-- Global settings
 _G.SendNotifications = true
 _G.DefaultSettings = false
 _G.TeamCheck = false
@@ -50,7 +50,7 @@ local function CreateESP()
         if character and character:FindFirstChild("HumanoidRootPart") then
             local HumanoidRootPart = character:FindFirstChild("HumanoidRootPart")
             local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart.Position)
-            
+
             TracerLine.Thickness = _G.TracerThickness
             TracerLine.Transparency = _G.TracerTransparency
             TracerLine.Color = _G.TracerColor
@@ -75,22 +75,21 @@ local function CreateESP()
     end
 
     local function handlePlayer(player)
-        if player.Name ~= game.Players.LocalPlayer.Name then
+        if player.Name ~= Players.LocalPlayer.Name then
             local TracerLine = Drawing.new("Line")
             local OuterGlow = Drawing.new("Square")
             local BodyFill = Drawing.new("Square")
 
-            RunService.RenderStepped:Connect(function()
-                local character = workspace:FindFirstChild(player.Name)
-                updateTracer(TracerLine, character)
-
-                -- Handle Outer Glow and Body Fill
+            local function updateESP()
+                local character = player.Character
                 if character and character:FindFirstChild("HumanoidRootPart") then
-                    local HumanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                    updateTracer(TracerLine, character)
+
+                    -- Handle Outer Glow and Body Fill
                     local Head = character:FindFirstChild("Head")
-                    local HRP_Vector, HRP_OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart.Position)
+                    local HRP_Vector, HRP_OnScreen = Camera:WorldToViewportPoint(character.HumanoidRootPart.Position)
                     local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head.Position)
-                    
+
                     if HRP_OnScreen and Head_OnScreen then
                         OuterGlow.Visible = true
                         OuterGlow.Color = _G.OuterGlowColor
@@ -98,7 +97,7 @@ local function CreateESP()
                         OuterGlow.Transparency = 0.7
                         OuterGlow.Size = Vector2.new(30, 60)
                         OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
-                        
+
                         BodyFill.Visible = true
                         BodyFill.Color = _G.FillColor
                         BodyFill.Transparency = 0.5
@@ -109,11 +108,13 @@ local function CreateESP()
                         BodyFill.Visible = false
                     end
                 else
+                    TracerLine.Visible = false
                     OuterGlow.Visible = false
                     BodyFill.Visible = false
                 end
-            end)
+            end
 
+            RunService.RenderStepped:Connect(updateESP)
             Players.PlayerRemoving:Connect(function()
                 TracerLine.Visible = false
                 OuterGlow.Visible = false
@@ -127,7 +128,7 @@ local function CreateESP()
     end
 
     Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function(character)
+        player.CharacterAdded:Connect(function()
             handlePlayer(player)
         end)
     end)
