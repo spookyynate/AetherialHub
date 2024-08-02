@@ -27,6 +27,7 @@ local UserInputService = game:GetService("UserInputService")
 
 -- Initialize configuration variables
 local TracersEnabled = true
+local ToggleESPKey = Enum.KeyCode.G  -- Default keybind for toggling ESP
 
 -- Global settings
 _G.SendNotifications = true
@@ -138,7 +139,7 @@ end
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
-    if input.KeyCode == Enum.KeyCode.G then
+    if input.KeyCode == ToggleESPKey then
         TracersEnabled = not TracersEnabled
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Aetherial Hub",
@@ -157,17 +158,17 @@ Players.LocalPlayer.Chatted:Connect(function(message)
         local keyName = args[2]:upper()
         local newKeybind = Enum.KeyCode[keyName]
 
-        if newKeybind and newKeybind ~= _G.DisableKey and newKeybind ~= _G.ModeSkipKey then
-            _G.DisableKey = newKeybind
+        if newKeybind then
+            ToggleESPKey = newKeybind
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Aetherial Hub",
-                Text = "Disable Keybind changed to " .. tostring(newKeybind),
+                Text = "ESP Toggle Keybind changed to " .. tostring(newKeybind),
                 Duration = 5,
             })
         else
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Aetherial Hub",
-                Text = "Invalid or already set keybind.",
+                Text = "Invalid keybind.",
                 Duration = 5,
             })
         end
