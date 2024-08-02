@@ -43,6 +43,20 @@ local function NewLine(thickness, color)
     return line
 end
 
+local function NewGlow(thickness, color)
+    local glow = Drawing.new("Quad")
+    glow.Visible = false
+    glow.PointA = Vector2.new(0,0)
+    glow.PointB = Vector2.new(0,0)
+    glow.PointC = Vector2.new(0,0)
+    glow.PointD = Vector2.new(0,0)
+    glow.Color = color
+    glow.Filled = false
+    glow.Thickness = thickness
+    glow.Transparency = 0.5 -- Set transparency to make it glow
+    return glow
+end
+
 local function Visibility(state, lib)
     for u, x in pairs(lib) do
         x.Visible = state
@@ -57,17 +71,20 @@ local function ToColor3(col)
 end
 
 local black = Color3.fromRGB(0, 0 ,0)
+local white = Color3.fromRGB(255, 255, 255)
+
 local function ESP(plr)
     local library = {
         blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
         tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
+        glow = NewGlow(Settings.Box_Thickness, white) -- Add glow effect
     }
 
     local function Colorize(color)
         for u, x in pairs(library) do
-            if x ~= library.blacktracer and x ~= library.black then
+            if x ~= library.blacktracer and x ~= library.black and x ~= library.glow then
                 x.Color = color
             end
         end
@@ -90,6 +107,7 @@ local function ESP(plr)
                     end
                     Size(library.box)
                     Size(library.black)
+                    Size(library.glow) -- Update glow size
 
                     if Settings.Tracers then
                         if Settings.Tracer_Origin == "Middle" then
