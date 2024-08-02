@@ -50,7 +50,7 @@ local function NewLine(thickness, color)
     line.Visible = false
     line.From = Vector2.new(0, 0)
     line.To = Vector2.new(0, 0)
-    line.Color = color 
+    line.Color = color
     line.Thickness = thickness
     line.Transparency = 1
     return line
@@ -96,7 +96,7 @@ local function ESP(plr)
                 if OnScreen and ESPEnabled then
                     local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
                     local DistanceY = math.clamp((Vector2.new(head.X, head.Y) - Vector2.new(HumPos.X, HumPos.Y)).magnitude, 2, math.huge)
-                    
+                   
                     local function Size(item)
                         item.PointA = Vector2.new(HumPos.X + DistanceY, HumPos.Y - DistanceY*2)
                         item.PointB = Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2)
@@ -111,7 +111,7 @@ local function ESP(plr)
                             library.tracer.From = camera.ViewportSize*0.5
                             library.blacktracer.From = camera.ViewportSize*0.5
                         elseif Settings.Tracer_Origin == "Bottom" then
-                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y) 
+                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
                             library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
                         end
                         if Settings.Tracer_FollowMouse then
@@ -120,7 +120,7 @@ local function ESP(plr)
                         end
                         library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
                         library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                    else 
+                    else
                         library.tracer.From = Vector2.new(0, 0)
                         library.blacktracer.From = Vector2.new(0, 0)
                         library.tracer.To = Vector2.new(0, 0)
@@ -130,10 +130,10 @@ local function ESP(plr)
                     if Team_Check.TeamCheck then
                         if plr.TeamColor == player.TeamColor then
                             Colorize(Team_Check.Green)
-                        else 
+                        else
                             Colorize(Team_Check.Red)
                         end
-                    else 
+                    else
                         library.tracer.Color = Settings.Tracer_Color
                         library.box.Color = Settings.Box_Color
                     end
@@ -141,10 +141,10 @@ local function ESP(plr)
                         Colorize(plr.TeamColor.Color)
                     end
                     Visibility(true, library)
-                else 
+                else
                     Visibility(false, library)
                 end
-            else 
+            else
                 Visibility(false, library)
                 if game.Players:FindFirstChild(plr.Name) == nil then
                     connection:Disconnect()
@@ -255,21 +255,21 @@ end)
 -- New function to toggle ESP
 local function ToggleESP()
     ESPEnabled = not ESPEnabled
-    
+   
     -- Toggle visibility for all ESP elements
     for _, v in pairs(game:GetService("Players"):GetPlayers()) do
         if v.Name ~= player.Name and v.Character then
             Visibility(ESPEnabled, v.Character)
         end
     end
-    
+   
     -- Toggle outline visibility
     for _, highlight in pairs(Folder:GetChildren()) do
         if highlight:IsA("Highlight") then
             highlight.Enabled = ESPEnabled
         end
     end
-    
+   
     -- Toggle nametag visibility
     for _, billboardGui in pairs(Folder:GetChildren()) do
         if billboardGui:IsA("BillboardGui") then
