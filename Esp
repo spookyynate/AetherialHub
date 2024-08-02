@@ -3,42 +3,64 @@ local Luxtl = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/
 local Luxt = Luxtl.CreateWindow("Wisteria GUI", 6105620301)
 
 -- Create Tabs
-local mainTab = Luxt:Tab("Auto-Farm", 6087485864)
-local teleportsTab = Luxt:Tab("Teleports")
-local autoQTab = Luxt:Tab("Auto-Quest")
-local combatTab = Luxt:Tab("Combat")
+local homeTab = Luxt:Tab("Home")
+local espTab = Luxt:Tab("ESP")
 local creditsTab = Luxt:Tab("Credits")
-local Examples = Luxt:Tab("Examples")
 
--- Credits
-local cf = creditsTab:Section("Main Credits")
-cf:Credit("Luxt: Main Coding")
-local cf1 = creditsTab:Section("UI Credits")
-cf1:Credit("xHeptc: UI Library")
-local cf2 = creditsTab:Section("Helping Credits")
-cf2:Credit("Salad: Helping")
-
--- Examples Tab
-local ff = Examples:Section("All Examples")
-ff:Label("Welcome to Wisteria GUI")
-ff:Button("TextButton Text", function()
+-- Home Tab
+local homeSection = homeTab:Section("Welcome")
+homeSection:Label("Welcome to Wisteria GUI")
+homeSection:Button("TextButton Text", function()
     print("Clicked!")
 end)
-ff:Toggle("Toggle Me!", function(isToggled)
+homeSection:Toggle("Toggle Me!", function(isToggled)
     print(isToggled) -- prints true or false
 end)
-ff:KeyBind("Print('Hey') on bind", Enum.KeyCode.R, function() --Enum.KeyCode.R is starting Key
+homeSection:KeyBind("Print('Hey') on bind", Enum.KeyCode.R, function() --Enum.KeyCode.R is starting Key
     print('Hey')
 end)
-ff:TextBox("TextBox Info", "Epic PlaceHolder", function(getText)
+homeSection:TextBox("TextBox Info", "Epic PlaceHolder", function(getText)
     print(getText) -- Prints whatever player types
 end)
-ff:Slider("WalkSpeed", 16, 503, function(currentValue)
+homeSection:Slider("WalkSpeed", 16, 503, function(currentValue)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = currentValue 
 end)
-ff:DropDown("Favorite Food?", {"Pizza", "Burger", "Sandwiches"}, function(food) -- food is chosen item
+homeSection:DropDown("Favorite Food?", {"Pizza", "Burger", "Sandwiches"}, function(food) -- food is chosen item
     print(food)
 end)
+
+-- ESP Tab
+local espSection = espTab:Section("ESP Settings")
+espSection:Toggle("Enable ESP", true, function(isEnabled)
+    Settings.Tracers = isEnabled
+end)
+espSection:ColorPicker("Box Color", Settings.Box_Color, function(color)
+    Settings.Box_Color = color
+end)
+espSection:ColorPicker("Tracer Color", Settings.Tracer_Color, function(color)
+    Settings.Tracer_Color = color
+end)
+espSection:Slider("Box Thickness", 1, 10, function(thickness)
+    Settings.Box_Thickness = thickness
+end)
+espSection:Slider("Tracer Thickness", 1, 10, function(thickness)
+    Settings.Tracer_Thickness = thickness
+end)
+espSection:Dropdown("Tracer Origin", {"Bottom", "Middle"}, function(origin)
+    Settings.Tracer_Origin = origin
+end)
+espSection:Toggle("Tracer Follow Mouse", false, function(isFollow)
+    Settings.Tracer_FollowMouse = isFollow
+end)
+espSection:Toggle("Team Check", false, function(isEnabled)
+    Team_Check.TeamCheck = isEnabled
+end)
+
+-- Credits Tab
+local creditsSection = creditsTab:Section("Credits")
+creditsSection:Credit("Luxt: Main Coding")
+creditsSection:Credit("xHeptc: UI Library")
+creditsSection:Credit("Salad: Helping")
 
 -- ESP Settings
 local Settings = {
@@ -200,41 +222,26 @@ local OutlineColoring = Color3.fromRGB(255, 255, 255)
 local OutlineFill = false
 local FillOpacity = 1
 local FillColoring = Color3.fromRGB(255, 255, 255)
-
-local NameTags = true
-local TextFont = Enum.Font.RobotoMono
-local NameColor = Color3.fromRGB(255, 255, 255)
-local NamePositioning = false
-
---[[
-   By Polarrr#0001 :)
-   https://v3rmillion.net/member.php?action=profile&uid=2340618
---]]
-
---// Don't Touch!
-local Folder = Instance.new("Folder", game:GetService("CoreGui"))
-Folder.Name = ""
-
-AddOutline = function(Character)
-   local Highlight = Instance.new("Highlight", Folder)
-   
-   Highlight.Adornee = Character
-   Highlight.FillColor = FillColoring
-   Highlight.FillTransparency = FillOpacity
-   Highlight.OutlineColor = OutlineColoring
-   Highlight.OutlineTransparency = 0
-   Highlight.OutlineMode = Enum.HighlightMode.OutlineAndFill
-   Highlight.Enabled = Outlines
+local function AddOutline(Character)
+    if not Character:FindFirstChild("Humanoid") or not Character:FindFirstChild("Head") then return end
+    local Highlight = Instance.new("Highlight", Character)
+    Highlight.Adornee = Character
+    Highlight.FillColor = FillColoring
+    Highlight.FillTransparency = FillOpacity
+    Highlight.OutlineColor = OutlineColoring
+    Highlight.OutlineTransparency = 0
+    Highlight.OutlineMode = Enum.HighlightMode.OutlineAndFill
+    Highlight.Enabled = Outlines
 end
 
 game.Players.PlayerAdded:Connect(function(plr)
-   local char = plr.Character or plr.CharacterAdded:Wait()
-   AddOutline(char)
+    local char = plr.Character or plr.CharacterAdded:Wait()
+    AddOutline(char)
 end)
 
 for i, v in pairs(game.Players:GetPlayers()) do
-   local char = v.Character
-   if char then
-       AddOutline(char)
-   end
+    local char = v.Character
+    if char then
+        AddOutline(char)
+    end
 end
