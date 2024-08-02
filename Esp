@@ -1,22 +1,19 @@
--- Preview: https://cdn.discordapp.com/attachments/796378086446333984/818089455897542687/unknown.png
--- Made by Blissful#4992
 local Settings = {
     Box_Color = Color3.fromRGB(255, 0, 0),
-    Tracer_Color = Color3.fromRGB(255, 0, 0),
+    Tracer_Color = Color3.fromRGB(255, 0, 0), -- Red tracer color
     Tracer_Thickness = 1,
     Box_Thickness = 1,
-    Tracer_Origin = "Bottom", -- Middle or Bottom if FollowMouse is on this won't matter...
+    Tracer_Origin = "Bottom", 
     Tracer_FollowMouse = false,
     Tracers = true
 }
 local Team_Check = {
-    TeamCheck = false, -- if TeamColor is on this won't matter...
+    TeamCheck = false,
     Green = Color3.fromRGB(0, 255, 0),
     Red = Color3.fromRGB(255, 0, 0)
 }
 local TeamColor = true
 
---// SEPARATION
 local player = game:GetService("Players").LocalPlayer
 local camera = game:GetService("Workspace").CurrentCamera
 local mouse = player:GetMouse()
@@ -52,20 +49,13 @@ local function Visibility(state, lib)
     end
 end
 
-local function ToColor3(col) --Function to convert, just cuz c;
-    local r = col.r --Red value
-    local g = col.g --Green value
-    local b = col.b --Blue value
-    return Color3.new(r,g,b); --Color3 datatype, made of the RGB inputs
-end
-
 local black = Color3.fromRGB(0, 0 ,0)
 local function ESP(plr)
     local library = {
-        --//Tracer and Black Tracer(black border)
+        --// Tracer and Black Tracer (black border)
         blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
         tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
-        --//Box and Black Box(black border)
+        --// Box and Black Box (black border)
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
     }
@@ -96,7 +86,6 @@ local function ESP(plr)
                     Size(library.box)
                     Size(library.black)
 
-                    --//Tracer 
                     if Settings.Tracers then
                         if Settings.Tracer_Origin == "Middle" then
                             library.tracer.From = camera.ViewportSize*0.5
