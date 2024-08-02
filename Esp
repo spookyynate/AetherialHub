@@ -5,143 +5,44 @@ local function API_Check()
     return success and result
 end
 
-local isAPIAvailable = API_Check()
+local Find_Required = API_Check()
 
-if not isAPIAvailable then
+if not Find_Required then
     game:GetService("StarterGui"):SetCore("SendNotification",{
         Title = "Aetherial Hub";
         Text = "Script could not load because Drawing API is not available.";
         Duration = math.huge;
         Button1 = "OK"
     })
+
     return
 end
 
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local Camera = game:GetService("Workspace").CurrentCamera
+-- Your other setup code...
+
+-- Keybind Handling
 local UserInputService = game:GetService("UserInputService")
 
-local Typing = false
-local TracersEnabled = true
-
-_G.SendNotifications = true
-_G.DefaultSettings = false
-_G.TeamCheck = false
-_G.FromMouse = false
-_G.FromCenter = false
-_G.FromBottom = true
-_G.TracersVisible = true
-_G.TracerColor = Color3.fromRGB(255, 80, 10)
-_G.TracerThickness = 1
-_G.TracerTransparency = 0.7
-_G.ModeSkipKey = Enum.KeyCode.E
-_G.DisableKey = Enum.KeyCode.Q
-_G.OuterGlowColor = Color3.fromRGB(255, 0, 0)
-_G.FillColor = Color3.fromRGB(255, 150, 150)
-
-local function CreateESP()
-    local function updateESP(player)
-        if player.Name ~= game.Players.LocalPlayer.Name then
-            local TracerLine = Drawing.new("Line")
-            local OuterGlow = Drawing.new("Square")
-            local BodyFill = Drawing.new("Square")
-
-            RunService.RenderStepped:Connect(function()
-                if workspace:FindFirstChild(player.Name) and workspace[player.Name]:FindFirstChild("HumanoidRootPart") then
-                    local HumanoidRootPart = workspace[player.Name].HumanoidRootPart
-                    local HumanoidRootPart_Position = HumanoidRootPart.CFrame.Position
-                    local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position)
-                    
-                    TracerLine.Thickness = _G.TracerThickness
-                    TracerLine.Transparency = _G.TracerTransparency
-                    TracerLine.Color = _G.TracerColor
-
-                    if _G.FromMouse then
-                        TracerLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
-                    elseif _G.FromCenter then
-                        TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-                    elseif _G.FromBottom then
-                        TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                    end
-
-                    if OnScreen and TracersEnabled then
-                        TracerLine.To = Vector2.new(Vector.X, Vector.Y)
-
-                        if _G.TeamCheck and Players.LocalPlayer.Team == player.Team then
-                            TracerLine.Visible = false
-                        else
-                            TracerLine.Visible = _G.TracersVisible
-                        end
-
-                        -- Update Outer Glow and Body Fill
-                        local Character = workspace:FindFirstChild(player.Name)
-                        if Character and Character:FindFirstChild("HumanoidRootPart") then
-                            local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-                            local Head = Character:FindFirstChild("Head")
-                            local HRP_Position = HumanoidRootPart.CFrame.Position
-                            local Head_Position = Head.CFrame.Position
-                            local HRP_Vector, HRP_OnScreen = Camera:WorldToViewportPoint(HRP_Position)
-                            local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head_Position)
-                            
-                            if HRP_OnScreen and Head_OnScreen then
-                                OuterGlow.Visible = true
-                                OuterGlow.Color = _G.OuterGlowColor
-                                OuterGlow.Thickness = 3
-                                OuterGlow.Transparency = 0.7
-                                OuterGlow.Size = Vector2.new(30, 60)
-                                OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
-                                
-                                BodyFill.Visible = true
-                                BodyFill.Color = _G.FillColor
-                                BodyFill.Transparency = 0.5
-                                BodyFill.Size = Vector2.new(28, 58)
-                                BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
-                            else
-                                OuterGlow.Visible = false
-                                BodyFill.Visible = false
-                            end
-                        else
-                            OuterGlow.Visible = false
-                            BodyFill.Visible = false
-                        end
-                    else
-                        TracerLine.Visible = false
-                        OuterGlow.Visible = false
-                        BodyFill.Visible = false
-                    end
-                else
-                    TracerLine.Visible = false
-                    OuterGlow.Visible = false
-                    BodyFill.Visible = false
-                end
-            end)
-
-            Players.PlayerRemoving:Connect(function()
-                TracerLine.Visible = false
-                OuterGlow.Visible = false
-                BodyFill.Visible = false
-            end)
-        end
+local function onInputBegan(input)
+    if input.KeyCode == _G.DisableKey then
+        TracersEnabled = not TracersEnabled
+        local status = TracersEnabled and "enabled" or "disabled"
+        game:GetService("StarterGui"):SetCore("SendNotification",{
+            Title = "Aetherial Hub";
+            Text = "Tracers " .. status .. ".";
+            Duration = 5;
+        })
     end
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        updateESP(player)
-    end
-
-    Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function()
-            updateESP(player)
-        end)
-    end)
 end
+
+UserInputService.InputBegan:Connect(onInputBegan)
 
 -- Chat Command Handler
 Players.LocalPlayer.Chatted:Connect(function(message)
     local args = string.split(message, " ")
-    local command = args[1]:lower()
+    local command = args[1]
 
-    if command == "/keybind" and #args == 2 then
+    if command:lower() == "/keybind" and #args == 2 then
         local keyName = args[2]:upper()
         local newKeybind = Enum.KeyCode[keyName]
 
@@ -154,15 +55,23 @@ Players.LocalPlayer.Chatted:Connect(function(message)
                     Duration = 5;
                 })
             elseif newKeybind == _G.DisableKey then
+                _G.DisableKey = newKeybind
                 game:GetService("StarterGui"):SetCore("SendNotification",{
                     Title = "Aetherial Hub";
                     Text = "Disable Keybind already set to " .. tostring(newKeybind);
                     Duration = 5;
                 })
             elseif newKeybind == _G.ModeSkipKey then
+                _G.ModeSkipKey = newKeybind
                 game:GetService("StarterGui"):SetCore("SendNotification",{
                     Title = "Aetherial Hub";
                     Text = "Mode Skip Keybind already set to " .. tostring(newKeybind);
+                    Duration = 5;
+                })
+            else
+                game:GetService("StarterGui"):SetCore("SendNotification",{
+                    Title = "Aetherial Hub";
+                    Text = "Invalid keybind.";
                     Duration = 5;
                 })
             end
@@ -173,7 +82,7 @@ Players.LocalPlayer.Chatted:Connect(function(message)
                 Duration = 5;
             })
         end
-    elseif command == "/color" and #args == 2 then
+    elseif command:lower() == "/color" and #args == 2 then
         local colorArgs = string.split(args[2], ",")
         if #colorArgs == 3 then
             local r = tonumber(colorArgs[1])
