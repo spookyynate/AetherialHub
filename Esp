@@ -34,7 +34,9 @@ local function onInputBegan(input)
             Duration = 5;
         })
         -- Update ESP visibility here if necessary
-        -- For example: espObject.Visible = TracersEnabled
+        if espObject then
+            espObject.Visible = TracersEnabled
+        end
     end
 end
 
@@ -96,7 +98,14 @@ end)
 
 -- Function to Create ESP
 local function CreateESP()
-    -- Your ESP creation logic here
+    -- Ensure ESP is created correctly and assigned to `espObject`
+    -- Example of creating an ESP part
+    espObject = Instance.new("Part")
+    espObject.Size = Vector3.new(1, 1, 1)
+    espObject.Anchored = true
+    espObject.CanCollide = false
+    espObject.BrickColor = BrickColor.new(_G.TracerColor)
+    espObject.Parent = game.Workspace
 end
 
 CreateESP()
