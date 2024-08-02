@@ -336,7 +336,7 @@ game:GetService("Players").PlayerAdded:Connect(function(Player)
    end)
 end)
 
--- Modify the ToggleESP function
+-- Modify the ToggleESP function to work with the GUI button
     local function ToggleESP()
         ESPEnabled = not ESPEnabled
        
@@ -365,5 +365,5 @@ end)
         ToggleButton.Text = ESPEnabled and "Disable ESP" or "Enable ESP"
     end
     
-    -- Connect the ToggleESP function to the button
+    -- Connect the ToggleESP function to the GUI button
     ToggleButton.MouseButton1Click:Connect(ToggleESP)
