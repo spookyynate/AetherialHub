@@ -1,285 +1,86 @@
-local Settings = {
-    Box_Color = Color3.fromRGB(255, 0, 0),
-    Tracer_Color = Color3.fromRGB(255, 0, 0),
-    Tracer_Thickness = 1,
-    Box_Thickness = 1,
-    Tracer_Origin = "Bottom",
-    Tracer_FollowMouse = false,
-    Tracers = true
-}
-
-local Team_Check = {
-    TeamCheck = false,
-    Green = Color3.fromRGB(0, 255, 0),
-    Red = Color3.fromRGB(255, 0, 0)
-}
-
-local TeamColor = true
-
-local player = game:GetService("Players").LocalPlayer
-local camera = game:GetService("Workspace").CurrentCamera
-local mouse = player:GetMouse()
-
--- New variables for ESP toggle
-local ESPEnabled = true
+-- Create a new ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
+-- Create the main frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+-- Add a title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+Title.Text = "ESP GUI"
+Title.Parent = MainFrame
+
+-- Create tab buttons
+local function CreateTab(name, position)
+    local Tab = Instance.new("TextButton")
+    Tab.Size = UDim2.new(0.33, 0, 0, 30)
+    Tab.Position = UDim2.new(0.33 * position, 0, 0, 30)
+    Tab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Tab.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Tab.Font = Enum.Font.SourceSans
+    Tab.TextSize = 14
+    Tab.Text = name
+    Tab.Parent = MainFrame
+    return Tab
+end
+
+local HomeTab = CreateTab("Home", 0)
+local ESPTab = CreateTab("ESP", 1)
+local CreditsTab = CreateTab("Credits", 2)
+
+-- Create content frames
+local function CreateContent()
+    local Content = Instance.new("Frame")
+    Content.Size = UDim2.new(1, 0, 1, -60)
+    Content.Position = UDim2.new(0, 0, 0, 60)
+    Content.BackgroundTransparency = 1
+    Content.Visible = false
+    Content.Parent = MainFrame
+    return Content
+end
+
+local HomeContent = CreateContent()
+local ESPContent = CreateContent()
+local CreditsContent = CreateContent()
+
+-- Add ESP toggle button to ESP tab
 local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 100, 0, 50)
-ToggleButton.Position = UDim2.new(0.9, -50, 0.1, 0)
+ToggleButton.Size = UDim2.new(0.8, 0, 0, 30)
+ToggleButton.Position = UDim2.new(0.1, 0, 0, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSans
+ToggleButton.TextSize = 14
 ToggleButton.Text = "Toggle ESP"
-ToggleButton.Parent = ScreenGui
+ToggleButton.Parent = ESPContent
 
-local function NewQuad(thickness, color)
-    local quad = Drawing.new("Quad")
-    quad.Visible = false
-    quad.PointA = Vector2.new(0,0)
-    quad.PointB = Vector2.new(0,0)
-    quad.PointC = Vector2.new(0,0)
-    quad.PointD = Vector2.new(0,0)
-    quad.Color = color
-    quad.Filled = false
-    quad.Thickness = thickness
-    quad.Transparency = 1
-    return quad
+-- Function to switch tabs
+local function SwitchTab(tab)
+    HomeContent.Visible = (tab == HomeTab)
+    ESPContent.Visible = (tab == ESPTab)
+    CreditsContent.Visible = (tab == CreditsTab)
 end
 
-local function NewLine(thickness, color)
-    local line = Drawing.new("Line")
-    line.Visible = false
-    line.From = Vector2.new(0, 0)
-    line.To = Vector2.new(0, 0)
-    line.Color = color
-    line.Thickness = thickness
-    line.Transparency = 1
-    return line
-end
+HomeTab.MouseButton1Click:Connect(function() SwitchTab(HomeTab) end)
+ESPTab.MouseButton1Click:Connect(function() SwitchTab(ESPTab) end)
+CreditsTab.MouseButton1Click:Connect(function() SwitchTab(CreditsTab) end)
 
-local function Visibility(state, lib)
-    for u, x in pairs(lib) do
-        if x.Visible ~= nil then
-            x.Visible = state and ESPEnabled
-        end
-    end
-end
-
-local function ToColor3(col)
-    local r = col.r
-    local g = col.g
-    local b = col.b
-    return Color3.new(r,g,b);
-end
-
-local black = Color3.fromRGB(0, 0 ,0)
-local function ESP(plr)
-    local library = {
-        blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
-        tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
-        black = NewQuad(Settings.Box_Thickness*2, black),
-        box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
-    }
-
-    local function Colorize(color)
-        for u, x in pairs(library) do
-            if x ~= library.blacktracer and x ~= library.black then
-                x.Color = color
-            end
-        end
-    end
-
-    local function Updater()
-        local connection
-        connection = game:GetService("RunService").RenderStepped:Connect(function()
-            if plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") ~= nil and plr.Character:FindFirstChild("HumanoidRootPart") ~= nil and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") ~= nil then
-                local HumPos, OnScreen = camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
-                if OnScreen and ESPEnabled then
-                    local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
-                    local DistanceY = math.clamp((Vector2.new(head.X, head.Y) - Vector2.new(HumPos.X, HumPos.Y)).magnitude, 2, math.huge)
-                   
-                    local function Size(item)
-                        item.PointA = Vector2.new(HumPos.X + DistanceY, HumPos.Y - DistanceY*2)
-                        item.PointB = Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2)
-                        item.PointC = Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)
-                        item.PointD = Vector2.new(HumPos.X + DistanceY, HumPos.Y + DistanceY*2)
-                    end
-                    Size(library.box)
-                    Size(library.black)
-
-                    if Settings.Tracers then
-                        if Settings.Tracer_Origin == "Middle" then
-                            library.tracer.From = camera.ViewportSize*0.5
-                            library.blacktracer.From = camera.ViewportSize*0.5
-                        elseif Settings.Tracer_Origin == "Bottom" then
-                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
-                            library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
-                        end
-                        if Settings.Tracer_FollowMouse then
-                            library.tracer.From = Vector2.new(mouse.X, mouse.Y+36)
-                            library.blacktracer.From = Vector2.new(mouse.X, mouse.Y+36)
-                        end
-                        library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                        library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                    else
-                        library.tracer.From = Vector2.new(0, 0)
-                        library.blacktracer.From = Vector2.new(0, 0)
-                        library.tracer.To = Vector2.new(0, 0)
-                        library.blacktracer.To = Vector2.new(0, 02)
-                    end
-
-                    if Team_Check.TeamCheck then
-                        if plr.TeamColor == player.TeamColor then
-                            Colorize(Team_Check.Green)
-                        else
-                            Colorize(Team_Check.Red)
-                        end
-                    else
-                        library.tracer.Color = Settings.Tracer_Color
-                        library.box.Color = Settings.Box_Color
-                    end
-                    if TeamColor == true then
-                        Colorize(plr.TeamColor.Color)
-                    end
-                    Visibility(true, library)
-                else
-                    Visibility(false, library)
-                end
-            else
-                Visibility(false, library)
-                if game.Players:FindFirstChild(plr.Name) == nil then
-                    connection:Disconnect()
-                end
-            end
-        end)
-    end
-    coroutine.wrap(Updater)()
-end
-
-for i, v in pairs(game:GetService("Players"):GetPlayers()) do
-    if v.Name ~= player.Name then
-        coroutine.wrap(ESP)(v)
-    end
-end
-
-game.Players.PlayerAdded:Connect(function(newplr)
-    if newplr.Name ~= player.Name then
-        coroutine.wrap(ESP)(newplr)
-    end
-end)
-
-local Outlines = true
-local OutlineColoring = Color3.fromRGB(255, 255, 255)
-local OutlineFill = false
-local FillOpacity = 1
-local FillColoring = Color3.fromRGB(255, 255, 255)
-
-local NameTags = true
-local TextFont = Enum.Font.RobotoMono
-local NameColor = Color3.fromRGB(255, 255, 255)
-local NamePositioning = false
-
-local Folder = Instance.new("Folder", game:GetService("CoreGui"))
-Folder.Name = ""
-
-local function AddOutline(Character)
-   local Highlight = Instance.new("Highlight", Folder)
-   
-   Highlight.OutlineColor = OutlineColoring
-   Highlight.Adornee = Character
-   Highlight.Enabled = ESPEnabled
-   
-   if OutlineFill == true then
-       Highlight.FillColor = FillColoring
-       Highlight.FillTransparency = FillOpacity
-   else
-       Highlight.FillTransparency = 1
-   end
-end
-
-local function AddNameTag(Character)
-   local BGui = Instance.new("BillboardGui", Folder)
-   local Frame = Instance.new("Frame", BGui)
-   local TextLabel = Instance.new("TextLabel", Frame)
-   
-   BGui.Adornee = Character:WaitForChild("Head")
-   BGui.StudsOffset = Vector3.new(0, 3, 0)
-   BGui.AlwaysOnTop = true
-   BGui.Enabled = ESPEnabled
-   
-   BGui.Size = UDim2.new(4, 0, 0.5, 0)
-   Frame.Size = UDim2.new(1, 0, 1, 0)
-   TextLabel.Size = UDim2.new(1, 0, 1, 0)
-   
-   Frame.BackgroundTransparency = 1
-   TextLabel.BackgroundTransparency = 1
-   
-   TextLabel.Text = Character.Name
-   TextLabel.Font = TextFont
-   TextLabel.TextColor3 = NameColor
-   TextLabel.TextScaled = NamePositioning
-end
-
-for i, v in ipairs(game:GetService("Players"):GetPlayers()) do
-   if v ~= game:GetService("Players").LocalPlayer then
-       v.CharacterAdded:Connect(function(Character)
-           if Outlines == true then
-               AddOutline(Character)
-           end
-           if NameTags == true then
-               AddNameTag(Character)
-           end
-       end)
-       
-       if v.Character then
-           if Outlines == true then
-               AddOutline(v.Character)
-           end
-           if NameTags == true then
-               AddNameTag(v.Character)
-           end
-       end
-   end
-end
-
-game:GetService("Players").PlayerAdded:Connect(function(Player)
-   Player.CharacterAdded:Connect(function(Character)
-       if Outlines == true then
-           AddOutline(Character)
-       end
-       if NameTags == true then
-           AddNameTag(Character)
-       end
-   end)
-end)
-
--- New function to toggle ESP
-local function ToggleESP()
-    ESPEnabled = not ESPEnabled
-   
-    -- Toggle visibility for all ESP elements
-    for _, v in pairs(game:GetService("Players"):GetPlayers()) do
-        if v.Name ~= player.Name and v.Character then
-            Visibility(ESPEnabled, v.Character)
-        end
-    end
-   
-    -- Toggle outline visibility
-    for _, highlight in pairs(Folder:GetChildren()) do
-        if highlight:IsA("Highlight") then
-            highlight.Enabled = ESPEnabled
-        end
-    end
-   
-    -- Toggle nametag visibility
-    for _, billboardGui in pairs(Folder:GetChildren()) do
-        if billboardGui:IsA("BillboardGui") then
-            billboardGui.Enabled = ESPEnabled
-        end
-    end
-end
+-- Set initial tab
+SwitchTab(HomeTab)
 
 -- Connect the ToggleESP function to the button
 ToggleButton.MouseButton1Click:Connect(ToggleESP)
+
 
 local Settings = {
     Box_Color = Color3.fromRGB(255, 0, 0),
