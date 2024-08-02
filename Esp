@@ -1,171 +1,116 @@
-local Settings = {
-    Box_Color = Color3.fromRGB(255, 0, 0),
-    Tracer_Color = Color3.fromRGB(255, 0, 0),
-    Tracer_Thickness = 1,
-    Box_Thickness = 1,
-    Tracer_Origin = "Bottom",
-    Tracer_FollowMouse = false,
-    Tracers = true
+local settings = {
+    enabled = true,
+    teamCheck = false,
 }
-local Team_Check = {
-    TeamCheck = false,
-    Green = Color3.fromRGB(0, 255, 0),
-    Red = Color3.fromRGB(255, 0, 0)
-}
-local TeamColor = true
 
-local player = game:GetService("Players").LocalPlayer
-local camera = game:GetService("Workspace").CurrentCamera
-local mouse = player:GetMouse()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local wtf = {}
 
-local function NewQuad(thickness, color)
-    local quad = Drawing.new("Quad")
-    quad.Visible = false
-    quad.PointA = Vector2.new(0,0)
-    quad.PointB = Vector2.new(0,0)
-    quad.PointC = Vector2.new(0,0)
-    quad.PointD = Vector2.new(0,0)
-    quad.Color = color
-    quad.Filled = false
-    quad.Thickness = thickness
-    quad.Transparency = 1
-    return quad
-end
+function esp(player)
+    if not settings.enabled then return end
+    if settings.teamCheck and player.Team == Players.LocalPlayer.Team then return end
+    if player == Players.LocalPlayer then return end
 
-local function NewLine(thickness, color)
-    local line = Drawing.new("Line")
-    line.Visible = false
-    line.From = Vector2.new(0, 0)
-    line.To = Vector2.new(0, 0)
-    line.Color = color 
-    line.Thickness = thickness
-    line.Transparency = 1
-    return line
-end
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
-local function NewGlow(thickness, color)
-    local glow = Drawing.new("Quad")
-    glow.Visible = false
-    glow.PointA = Vector2.new(0,0)
-    glow.PointB = Vector2.new(0,0)
-    glow.PointC = Vector2.new(0,0)
-    glow.PointD = Vector2.new(0,0)
-    glow.Color = color
-    glow.Filled = false
-    glow.Thickness = thickness
-    glow.Transparency = 0.5 -- Set transparency to make it glow
-    return glow
-end
+    local Box = Drawing.new("Square")
+    Box.Color = Color3.new(1, 0, 0)
+    Box.Thickness = 2
+    Box.Transparency = 1
+    Box.Filled = false
 
-local function Visibility(state, lib)
-    for u, x in pairs(lib) do
-        x.Visible = state
-    end
-end
+    local tracer = Drawing.new("Line")
+    tracer.Color = Color3.new(1, 0, 0)
+    tracer.Thickness = 1
+    tracer.Transparency = 1
 
-local function ToColor3(col)
-    local r = col.r
-    local g = col.g
-    local b = col.b
-    return Color3.new(r,g,b);
-end
+    local name = Drawing.new("Text")
+    name.Text = player.Name
+    name.Color = Color3.new(1, 1, 1)
+    name.Size = 20
+    name.Center = true
+    name.Outline = true
+    name.Transparency = 1
 
-local black = Color3.fromRGB(0, 0 ,0)
-local white = Color3.fromRGB(255, 255, 255)
+    wtf[player] = {box = Box, tracer = tracer, name = name}
 
-local function ESP(plr)
-    local library = {
-        blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
-        tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
-        black = NewQuad(Settings.Box_Thickness*2, black),
-        box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
-        glow = NewGlow(Settings.Box_Thickness, white) -- Add glow effect
-    }
+    local function loop()
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+            Box.Visible = false
+            tracer.Visible = false
+            name.Visible = false
+            return
+        end
 
-    local function Colorize(color)
-        for u, x in pairs(library) do
-            if x ~= library.blacktracer and x ~= library.black and x ~= library.glow then
-                x.Color = color
-            end
+        local hrpPosition, onScreen = workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position)
+        if onScreen then
+            local top = workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position + Vector3.new(0, 3, 0))
+            local bottom = workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position - Vector3.new(0, 3, 0))
+            local size = Vector2.new(math.abs(top.X - bottom.X) * 1.5, math.abs(top.Y - bottom.Y) * 1.5)
+            Box.Size = size
+            Box.Position = Vector2.new(hrpPosition.X - size.X / 2, hrpPosition.Y - size.Y / 2)
+            Box.Visible = true
+
+            tracer.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+            tracer.To = Vector2.new(hrpPosition.X, hrpPosition.Y)
+            tracer.Visible = true
+
+            name.Position = Vector2.new(hrpPosition.X, hrpPosition.Y - size.Y / 2 - 20)
+            name.Visible = true
+        else
+            Box.Visible = false
+            tracer.Visible = false
+            name.Visible = false
         end
     end
 
-    local function Updater()
-        local connection
-        connection = game:GetService("RunService").RenderStepped:Connect(function()
-            if plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") ~= nil and plr.Character:FindFirstChild("HumanoidRootPart") ~= nil and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") ~= nil then
-                local HumPos, OnScreen = camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
-                if OnScreen then
-                    local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
-                    local DistanceY = math.clamp((Vector2.new(head.X, head.Y) - Vector2.new(HumPos.X, HumPos.Y)).magnitude, 2, math.huge)
-                    
-                    local function Size(item)
-                        item.PointA = Vector2.new(HumPos.X + DistanceY, HumPos.Y - DistanceY*2)
-                        item.PointB = Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2)
-                        item.PointC = Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)
-                        item.PointD = Vector2.new(HumPos.X + DistanceY, HumPos.Y + DistanceY*2)
-                    end
-                    Size(library.box)
-                    Size(library.black)
-                    Size(library.glow) -- Update glow size
+    RunService.RenderStepped:Connect(loop)
+end
 
-                    if Settings.Tracers then
-                        if Settings.Tracer_Origin == "Middle" then
-                            library.tracer.From = camera.ViewportSize*0.5
-                            library.blacktracer.From = camera.ViewportSize*0.5
-                        elseif Settings.Tracer_Origin == "Bottom" then
-                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y) 
-                            library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
-                        end
-                        if Settings.Tracer_FollowMouse then
-                            library.tracer.From = Vector2.new(mouse.X, mouse.Y+36)
-                            library.blacktracer.From = Vector2.new(mouse.X, mouse.Y+36)
-                        end
-                        library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                        library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                    else 
-                        library.tracer.From = Vector2.new(0, 0)
-                        library.blacktracer.From = Vector2.new(0, 0)
-                        library.tracer.To = Vector2.new(0, 0)
-                        library.blacktracer.To = Vector2.new(0, 02)
-                    end
+function remove(player)
+    if wtf[player] then
+        wtf[player].box:Remove()
+        wtf[player].tracer:Remove()
+        wtf[player].name:Remove()
+        wtf[player] = nil
+    end
+end
 
-                    if Team_Check.TeamCheck then
-                        if plr.TeamColor == player.TeamColor then
-                            Colorize(Team_Check.Green)
-                        else 
-                            Colorize(Team_Check.Red)
-                        end
-                    else 
-                        library.tracer.Color = Settings.Tracer_Color
-                        library.box.Color = Settings.Box_Color
-                    end
-                    if TeamColor == true then
-                        Colorize(plr.TeamColor.Color)
-                    end
-                    Visibility(true, library)
-                else 
-                    Visibility(false, library)
-                end
-            else 
-                Visibility(false, library)
-                if game.Players:FindFirstChild(plr.Name) == nil then
-                    connection:Disconnect()
-                end
+function add(player)
+    player.CharacterAdded:Connect(function(character)
+        esp(player)
+    end)
+    player.CharacterRemoving:Connect(function(character)
+        remove(player)
+    end)
+    if player.Character then
+        esp(player)
+    end
+end
+
+Players.PlayerAdded:Connect(add)
+
+for _, player in pairs(Players:GetPlayers()) do
+    add(player)
+end
+
+function toggle(state)
+    settings.enabled = state
+    if not state then
+        for _, player in pairs(Players:GetPlayers()) do
+            remove(player)
+        end
+    else
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Character then
+                esp(player)
             end
-        end)
-    end
-    coroutine.wrap(Updater)()
-end
-
-for i, v in pairs(game:GetService("Players"):GetPlayers()) do
-    if v.Name ~= player.Name then
-        coroutine.wrap(ESP)(v)
+        end
     end
 end
 
-game.Players.PlayerAdded:Connect(function(newplr)
-    if newplr.Name ~= player.Name then
-        coroutine.wrap(ESP)(newplr)
-    end
-end)
+function this_is_stupid(state)
+    settings.teamCheck = state
+end
