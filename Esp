@@ -1,40 +1,3 @@
--- Add this at the beginning of your script
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
-
--- Create the GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = PlayerGui
-
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 200, 0, 150)
-Frame.Position = UDim2.new(0.8, 0, 0.8, 0)
-Frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Frame.Parent = ScreenGui
-
-local TracerButton = Instance.new("TextButton")
-TracerButton.Size = UDim2.new(0.9, 0, 0.3, 0)
-TracerButton.Position = UDim2.new(0.05, 0, 0.05, 0)
-TracerButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-TracerButton.Text = "Tracers: ON"
-TracerButton.Parent = Frame
-
-local BoxButton = Instance.new("TextButton")
-BoxButton.Size = UDim2.new(0.9, 0, 0.3, 0)
-BoxButton.Position = UDim2.new(0.05, 0, 0.4, 0)
-BoxButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-BoxButton.Text = "Boxes: ON"
-BoxButton.Parent = Frame
-
-local OutlineButton = Instance.new("TextButton")
-OutlineButton.Size = UDim2.new(0.9, 0, 0.3, 0)
-OutlineButton.Position = UDim2.new(0.05, 0, 0.75, 0)
-OutlineButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-OutlineButton.Text = "Outlines: ON"
-OutlineButton.Parent = Frame
-
--- Initialize Settings
 local Settings = {
     Box_Color = Color3.fromRGB(255, 0, 0),
     Tracer_Color = Color3.fromRGB(255, 0, 0),
@@ -43,8 +6,10 @@ local Settings = {
     Tracer_Origin = "Bottom",
     Tracer_FollowMouse = false,
     Tracers = true,
-    Outlines = true
+    Boxes = true,  -- Add this for Box ESP toggling
+    Outlines = true,  -- Add this for Outline ESP toggling
 }
+
 local Team_Check = {
     TeamCheck = false,
     Green = Color3.fromRGB(0, 255, 0),
@@ -52,27 +17,75 @@ local Team_Check = {
 }
 local TeamColor = true
 
--- Update Button Functionality
-TracerButton.MouseButton1Click:Connect(function()
-    Settings.Tracers = not Settings.Tracers
-    TracerButton.Text = Settings.Tracers and "Tracers: ON" or "Tracers: OFF"
-end)
-
-BoxButton.MouseButton1Click:Connect(function()
-    Settings.Box = not Settings.Box
-    BoxButton.Text = Settings.Box and "Boxes: ON" or "Boxes: OFF"
-end)
-
-OutlineButton.MouseButton1Click:Connect(function()
-    Settings.Outlines = not Settings.Outlines
-    OutlineButton.Text = Settings.Outlines and "Outlines: ON" or "Outlines: OFF"
-end)
-
--- ESP and Outline Functions
 local player = game:GetService("Players").LocalPlayer
 local camera = game:GetService("Workspace").CurrentCamera
 local mouse = player:GetMouse()
 
+-- GUI Setup
+local function setupGUI()
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Parent = player:WaitForChild("PlayerGui")
+    
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 200, 0, 300)
+    Frame.Position = UDim2.new(0.7, 0, 0.5, -150)
+    Frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Frame.Parent = ScreenGui
+    
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0.1, 0)
+    Title.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    Title.Text = "ESP Settings"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextScaled = true
+    Title.Parent = Frame
+    
+    local TracerButton = Instance.new("TextButton")
+    TracerButton.Size = UDim2.new(0.9, 0, 0.2, 0)
+    TracerButton.Position = UDim2.new(0.05, 0, 0.2, 0)
+    TracerButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    TracerButton.Text = "Tracers: ON"
+    TracerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TracerButton.TextScaled = true
+    TracerButton.Parent = Frame
+    
+    local BoxButton = Instance.new("TextButton")
+    BoxButton.Size = UDim2.new(0.9, 0, 0.2, 0)
+    BoxButton.Position = UDim2.new(0.05, 0, 0.45, 0)
+    BoxButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    BoxButton.Text = "Boxes: ON"
+    BoxButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BoxButton.TextScaled = true
+    BoxButton.Parent = Frame
+    
+    local OutlineButton = Instance.new("TextButton")
+    OutlineButton.Size = UDim2.new(0.9, 0, 0.2, 0)
+    OutlineButton.Position = UDim2.new(0.05, 0, 0.7, 0)
+    OutlineButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    OutlineButton.Text = "Outlines: ON"
+    OutlineButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    OutlineButton.TextScaled = true
+    OutlineButton.Parent = Frame
+    
+    TracerButton.MouseButton1Click:Connect(function()
+        Settings.Tracers = not Settings.Tracers
+        TracerButton.Text = Settings.Tracers and "Tracers: ON" or "Tracers: OFF"
+    end)
+    
+    BoxButton.MouseButton1Click:Connect(function()
+        Settings.Boxes = not Settings.Boxes
+        BoxButton.Text = Settings.Boxes and "Boxes: ON" or "Boxes: OFF"
+    end)
+    
+    OutlineButton.MouseButton1Click:Connect(function()
+        Settings.Outlines = not Settings.Outlines
+        OutlineButton.Text = Settings.Outlines and "Outlines: ON" or "Outlines: OFF"
+    end)
+end
+
+setupGUI()
+
+-- Functions for ESP elements
 local function NewQuad(thickness, color)
     local quad = Drawing.new("Quad")
     quad.Visible = false
@@ -102,13 +115,6 @@ local function Visibility(state, lib)
     for u, x in pairs(lib) do
         x.Visible = state
     end
-end
-
-local function ToColor3(col)
-    local r = col.r
-    local g = col.g
-    local b = col.b
-    return Color3.new(r,g,b);
 end
 
 local black = Color3.fromRGB(0, 0 ,0)
@@ -146,6 +152,7 @@ local function ESP(plr)
                     Size(library.box)
                     Size(library.black)
 
+
                     if Settings.Tracers then
                         if Settings.Tracer_Origin == "Middle" then
                             library.tracer.From = camera.ViewportSize*0.5
@@ -167,68 +174,51 @@ local function ESP(plr)
                         library.blacktracer.To = Vector2.new(0, 02)
                     end
 
-                    if Settings.Outlines then
-                        AddOutline(plr.Character)
+                    if Settings.Boxes then
+                        Visibility(true, {library.box, library.black})
                     else
-                        -- Hide outlines if toggled off
-                        for _, obj in pairs(Folder:GetChildren()) do
-                            if obj:IsA("Highlight") and obj.Adornee == plr.Character then
-                                obj:Destroy()
-                            end
+                        Visibility(false, {library.box, library.black})
+                    end
+
+                    if Settings.Outlines then
+                        -- Ensure the Outline functionality is enabled
+                        if not library.outline then
+                            library.outline = NewQuad(Settings.Box_Thickness*1.5, Settings.Box_Color)
+                        end
+                        library.outline.PointA = Vector2.new(HumPos.X - DistanceY - 5, HumPos.Y - DistanceY - 5)
+                        library.outline.PointB = Vector2.new(HumPos.X + DistanceY + 5, HumPos.Y - DistanceY - 5)
+                        library.outline.PointC = Vector2.new(HumPos.X + DistanceY + 5, HumPos.Y + DistanceY + 5)
+                        library.outline.PointD = Vector2.new(HumPos.X - DistanceY - 5, HumPos.Y + DistanceY + 5)
+                        library.outline.Color = Settings.Box_Color
+                        library.outline.Visible = true
+                    else
+                        if library.outline then
+                            library.outline.Visible = false
                         end
                     end
 
-                    if Team_Check.TeamCheck then
-                        if plr.TeamColor == player.TeamColor then
-                            Colorize(Team_Check.Green)
-                        else 
-                            Colorize(Team_Check.Red)
-                        end
-                    else 
-                        library.tracer.Color = Settings.Tracer_Color
-                        library.box.Color = Settings.Box_Color
-                    end
-                    if TeamColor == true then
-                        Colorize(plr.TeamColor.Color)
-                    end
-                    Visibility(true, library)
-                else 
+                else
                     Visibility(false, library)
                 end
-            else 
+            else
                 Visibility(false, library)
-                if game.Players:FindFirstChild(plr.Name) == nil then
-                    connection:Disconnect()
-                end
             end
         end)
+        return connection
     end
 
-    Updater()
+    return Updater()
 end
 
--- Add Outline ESP Function
-local function AddOutline(character)
-    local folder = Instance.new("Folder")
-    folder.Name = "Outlines"
-    folder.Parent = character
-    for _, part in pairs(character:GetChildren()) do
-        if part:IsA("BasePart") then
-            local highlight = Instance.new("Highlight")
-            highlight.Adornee = part
-            highlight.Parent = folder
-            highlight.OutlineColor = Settings.Box_Color
-        end
+-- ESP initialization
+for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
+    if plr ~= player and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+        ESP(plr)
     end
 end
 
--- ESP Usage
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= Players.LocalPlayer then
-        ESP(player)
+game:GetService("Players").PlayerAdded:Connect(function(plr)
+    if plr ~= player then
+        ESP(plr)
     end
-end
-
-Players.PlayerAdded:Connect(function(player)
-    ESP(player)
 end)
