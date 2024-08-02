@@ -1,6 +1,6 @@
 local Settings = {
     Box_Color = Color3.fromRGB(255, 0, 0),
-    Tracer_Color = Color3.fromRGB(255, 0, 0), -- Red tracer color
+    Tracer_Color = Color3.fromRGB(255, 0, 0), -- Ensure this is red
     Tracer_Thickness = 1,
     Box_Thickness = 1,
     Tracer_Origin = "Bottom", 
@@ -44,7 +44,7 @@ local function NewLine(thickness, color)
 end
 
 local function Visibility(state, lib)
-    for u, x in pairs(lib) do
+    for _, x in pairs(lib) do
         x.Visible = state
     end
 end
@@ -54,14 +54,14 @@ local function ESP(plr)
     local library = {
         --// Tracer and Black Tracer (black border)
         blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
-        tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
+        tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color), -- Ensure tracer color is red
         --// Box and Black Box (black border)
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
     }
 
     local function Colorize(color)
-        for u, x in pairs(library) do
+        for _, x in pairs(library) do
             if x ~= library.blacktracer and x ~= library.black then
                 x.Color = color
             end
@@ -135,7 +135,7 @@ local function ESP(plr)
     coroutine.wrap(Updater)()
 end
 
-for i, v in pairs(game:GetService("Players"):GetPlayers()) do
+for _, v in pairs(game:GetService("Players"):GetPlayers()) do
     if v.Name ~= player.Name then
         coroutine.wrap(ESP)(v)
     end
