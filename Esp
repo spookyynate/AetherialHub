@@ -1,18 +1,20 @@
 local Settings = {
-    Box_Color = Color3.fromRGB(0, 0, 0),
-    Tracer_Color = Color3.fromRGB(0, 0, 0), -- Red tracer color
+    Box_Color = Color3.fromRGB(255, 0, 0),
+    Tracer_Color = Color3.fromRGB(255, 0, 0), -- Red tracer color
     Tracer_Thickness = 1,
     Box_Thickness = 1,
-    Tracer_Origin = "Bottom", 
+    Tracer_Origin = "Bottom",
     Tracer_FollowMouse = false,
     Tracers = true
 }
+
 local Team_Check = {
     TeamCheck = false,
     Green = Color3.fromRGB(0, 255, 0),
     Red = Color3.fromRGB(255, 0, 0)
 }
-local TeamColor = true
+
+local TeamColor = false
 
 local player = game:GetService("Players").LocalPlayer
 local camera = game:GetService("Workspace").CurrentCamera
