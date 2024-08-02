@@ -1,205 +1,159 @@
--- Function to check if Drawing API is available
-local function API_Check()
-    local success, result = pcall(function()
-        return Drawing ~= nil
-    end)
-    return success and result
+-- Preview: https://cdn.discordapp.com/attachments/796378086446333984/818089455897542687/unknown.png
+-- Made by Blissful#4992
+local Settings = {
+    Box_Color = Color3.fromRGB(255, 0, 0),
+    Tracer_Color = Color3.fromRGB(255, 0, 0),
+    Tracer_Thickness = 1,
+    Box_Thickness = 1,
+    Tracer_Origin = "Bottom", -- Middle or Bottom if FollowMouse is on this won't matter...
+    Tracer_FollowMouse = false,
+    Tracers = true
+}
+local Team_Check = {
+    TeamCheck = false, -- if TeamColor is on this won't matter...
+    Green = Color3.fromRGB(0, 255, 0),
+    Red = Color3.fromRGB(255, 0, 0)
+}
+local TeamColor = true
+
+--// SEPARATION
+local player = game:GetService("Players").LocalPlayer
+local camera = game:GetService("Workspace").CurrentCamera
+local mouse = player:GetMouse()
+
+local function NewQuad(thickness, color)
+    local quad = Drawing.new("Quad")
+    quad.Visible = false
+    quad.PointA = Vector2.new(0,0)
+    quad.PointB = Vector2.new(0,0)
+    quad.PointC = Vector2.new(0,0)
+    quad.PointD = Vector2.new(0,0)
+    quad.Color = color
+    quad.Filled = false
+    quad.Thickness = thickness
+    quad.Transparency = 1
+    return quad
 end
 
--- Check if Drawing API is available
-local isDrawingAvailable = API_Check()
-
-if not isDrawingAvailable then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Aetherial Hub",
-        Text = "Script could not load because Drawing API is not available.",
-        Duration = math.huge,
-        Button1 = "OK"
-    })
-    return
+local function NewLine(thickness, color)
+    local line = Drawing.new("Line")
+    line.Visible = false
+    line.From = Vector2.new(0, 0)
+    line.To = Vector2.new(0, 0)
+    line.Color = color 
+    line.Thickness = thickness
+    line.Transparency = 1
+    return line
 end
 
--- Initialize services
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local Camera = game:GetService("Workspace").CurrentCamera
-local UserInputService = game:GetService("UserInputService")
+local function Visibility(state, lib)
+    for u, x in pairs(lib) do
+        x.Visible = state
+    end
+end
 
--- Initialize configuration variables
-local TracersEnabled = true
-local ToggleESPKey = Enum.KeyCode.G  -- Default keybind for toggling ESP
+local function ToColor3(col) --Function to convert, just cuz c;
+    local r = col.r --Red value
+    local g = col.g --Green value
+    local b = col.b --Blue value
+    return Color3.new(r,g,b); --Color3 datatype, made of the RGB inputs
+end
 
--- Global settings
-_G.SendNotifications = true
-_G.DefaultSettings = false
-_G.TeamCheck = false
-_G.FromMouse = false
-_G.FromCenter = false
-_G.FromBottom = true
-_G.TracersVisible = true
-_G.TracerColor = Color3.fromRGB(255, 80, 10)
-_G.TracerThickness = 1
-_G.TracerTransparency = 0.7
-_G.ModeSkipKey = Enum.KeyCode.E
-_G.DisableKey = Enum.KeyCode.Q
-_G.OuterGlowColor = Color3.fromRGB(255, 0, 0)
-_G.FillColor = Color3.fromRGB(255, 150, 150)
+local black = Color3.fromRGB(0, 0 ,0)
+local function ESP(plr)
+    local library = {
+        --//Tracer and Black Tracer(black border)
+        blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
+        tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
+        --//Box and Black Box(black border)
+        black = NewQuad(Settings.Box_Thickness*2, black),
+        box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
+    }
 
--- Function to create ESP
-local function CreateESP()
-    local function updateTracer(TracerLine, character)
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local HumanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-            local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart.Position)
-
-            TracerLine.Thickness = _G.TracerThickness
-            TracerLine.Transparency = _G.TracerTransparency
-            TracerLine.Color = _G.TracerColor
-
-            if _G.FromMouse then
-                TracerLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
-            elseif _G.FromCenter then
-                TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-            elseif _G.FromBottom then
-                TracerLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+    local function Colorize(color)
+        for u, x in pairs(library) do
+            if x ~= library.blacktracer and x ~= library.black then
+                x.Color = color
             end
-
-            if OnScreen and TracersEnabled then
-                TracerLine.To = Vector2.new(Vector.X, Vector.Y)
-                TracerLine.Visible = _G.TracersVisible
-            else
-                TracerLine.Visible = false
-            end
-        else
-            TracerLine.Visible = false
         end
     end
 
-    local function handlePlayer(player)
-        if player.Name ~= Players.LocalPlayer.Name then
-            local TracerLine = Drawing.new("Line")
-            local OuterGlow = Drawing.new("Square")
-            local BodyFill = Drawing.new("Square")
-
-            local function updateESP()
-                local character = player.Character
-                if character and character:FindFirstChild("HumanoidRootPart") then
-                    updateTracer(TracerLine, character)
-
-                    -- Handle Outer Glow and Body Fill
-                    local Head = character:FindFirstChild("Head")
-                    local HRP_Vector, HRP_OnScreen = Camera:WorldToViewportPoint(character.HumanoidRootPart.Position)
-                    local Head_Vector, Head_OnScreen = Camera:WorldToViewportPoint(Head.Position)
-
-                    if HRP_OnScreen and Head_OnScreen then
-                        OuterGlow.Visible = true
-                        OuterGlow.Color = _G.OuterGlowColor
-                        OuterGlow.Thickness = 3
-                        OuterGlow.Transparency = 0.7
-                        OuterGlow.Size = Vector2.new(30, 60)
-                        OuterGlow.Position = Vector2.new(HRP_Vector.X - OuterGlow.Size.X / 2, HRP_Vector.Y - OuterGlow.Size.Y / 2)
-
-                        BodyFill.Visible = true
-                        BodyFill.Color = _G.FillColor
-                        BodyFill.Transparency = 0.5
-                        BodyFill.Size = Vector2.new(28, 58)
-                        BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
-                    else
-                        OuterGlow.Visible = false
-                        BodyFill.Visible = false
+    local function Updater()
+        local connection
+        connection = game:GetService("RunService").RenderStepped:Connect(function()
+            if plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") ~= nil and plr.Character:FindFirstChild("HumanoidRootPart") ~= nil and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") ~= nil then
+                local HumPos, OnScreen = camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
+                if OnScreen then
+                    local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
+                    local DistanceY = math.clamp((Vector2.new(head.X, head.Y) - Vector2.new(HumPos.X, HumPos.Y)).magnitude, 2, math.huge)
+                    
+                    local function Size(item)
+                        item.PointA = Vector2.new(HumPos.X + DistanceY, HumPos.Y - DistanceY*2)
+                        item.PointB = Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2)
+                        item.PointC = Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)
+                        item.PointD = Vector2.new(HumPos.X + DistanceY, HumPos.Y + DistanceY*2)
                     end
-                else
-                    TracerLine.Visible = false
-                    OuterGlow.Visible = false
-                    BodyFill.Visible = false
+                    Size(library.box)
+                    Size(library.black)
+
+                    --//Tracer 
+                    if Settings.Tracers then
+                        if Settings.Tracer_Origin == "Middle" then
+                            library.tracer.From = camera.ViewportSize*0.5
+                            library.blacktracer.From = camera.ViewportSize*0.5
+                        elseif Settings.Tracer_Origin == "Bottom" then
+                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y) 
+                            library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
+                        end
+                        if Settings.Tracer_FollowMouse then
+                            library.tracer.From = Vector2.new(mouse.X, mouse.Y+36)
+                            library.blacktracer.From = Vector2.new(mouse.X, mouse.Y+36)
+                        end
+                        library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
+                        library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
+                    else 
+                        library.tracer.From = Vector2.new(0, 0)
+                        library.blacktracer.From = Vector2.new(0, 0)
+                        library.tracer.To = Vector2.new(0, 0)
+                        library.blacktracer.To = Vector2.new(0, 02)
+                    end
+
+                    if Team_Check.TeamCheck then
+                        if plr.TeamColor == player.TeamColor then
+                            Colorize(Team_Check.Green)
+                        else 
+                            Colorize(Team_Check.Red)
+                        end
+                    else 
+                        library.tracer.Color = Settings.Tracer_Color
+                        library.box.Color = Settings.Box_Color
+                    end
+                    if TeamColor == true then
+                        Colorize(plr.TeamColor.Color)
+                    end
+                    Visibility(true, library)
+                else 
+                    Visibility(false, library)
+                end
+            else 
+                Visibility(false, library)
+                if game.Players:FindFirstChild(plr.Name) == nil then
+                    connection:Disconnect()
                 end
             end
-
-            RunService.RenderStepped:Connect(updateESP)
-            Players.PlayerRemoving:Connect(function()
-                TracerLine.Visible = false
-                OuterGlow.Visible = false
-                BodyFill.Visible = false
-            end)
-        end
-    end
-
-    for _, player in pairs(Players:GetPlayers()) do
-        handlePlayer(player)
-    end
-
-    Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function()
-            handlePlayer(player)
         end)
-    end)
+    end
+    coroutine.wrap(Updater)()
 end
 
--- Key Bindings
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
+for i, v in pairs(game:GetService("Players"):GetPlayers()) do
+    if v.Name ~= player.Name then
+        coroutine.wrap(ESP)(v)
+    end
+end
 
-    if input.KeyCode == ToggleESPKey then
-        TracersEnabled = not TracersEnabled
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Aetherial Hub",
-            Text = "ESP " .. (TracersEnabled and "Enabled" or "Disabled"),
-            Duration = 2,
-        })
+game.Players.PlayerAdded:Connect(function(newplr)
+    if newplr.Name ~= player.Name then
+        coroutine.wrap(ESP)(newplr)
     end
 end)
-
--- Chat Command Handler
-Players.LocalPlayer.Chatted:Connect(function(message)
-    local args = string.split(message, " ")
-    local command = args[1]:lower()
-
-    if command == "/keybind" and #args == 2 then
-        local keyName = args[2]:upper()
-        local newKeybind = Enum.KeyCode[keyName]
-
-        if newKeybind then
-            ToggleESPKey = newKeybind
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "Aetherial Hub",
-                Text = "ESP Toggle Keybind changed to " .. tostring(newKeybind),
-                Duration = 5,
-            })
-        else
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "Aetherial Hub",
-                Text = "Invalid keybind.",
-                Duration = 5,
-            })
-        end
-    elseif command == "/color" and #args == 2 then
-        local colorArgs = string.split(args[2], ",")
-        if #colorArgs == 3 then
-            local r, g, b = tonumber(colorArgs[1]), tonumber(colorArgs[2]), tonumber(colorArgs[3])
-            
-            if r and g and b and r >= 0 and r <= 255 and g >= 0 and g <= 255 and b >= 0 and b <= 255 then
-                _G.TracerColor = Color3.fromRGB(r, g, b)
-                game:GetService("StarterGui"):SetCore("SendNotification", {
-                    Title = "Aetherial Hub",
-                    Text = "Tracer color changed to (" .. r .. ", " .. g .. ", " .. b .. ")",
-                    Duration = 5,
-                })
-            else
-                game:GetService("StarterGui"):SetCore("SendNotification", {
-                    Title = "Aetherial Hub",
-                    Text = "Invalid color values. Please use format R,G,B with values between 0 and 255.",
-                    Duration = 5,
-                })
-            end
-        else
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "Aetherial Hub",
-                Text = "Invalid color format. Please use format R,G,B.",
-                Duration = 5,
-            })
-        end
-    end
-end)
-
--- Call CreateESP to start
-CreateESP()
