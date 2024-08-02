@@ -1,3 +1,9 @@
+-- Function to get the local player's display name
+local function getDisplayName()
+    return game.Players.LocalPlayer.DisplayName
+end
+
+-- Check if Drawing API is available
 local function API_Check()
     local success, result = pcall(function()
         return Drawing ~= nil
@@ -8,22 +14,10 @@ end
 local Find_Required = API_Check()
 
 if not Find_Required then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
+    local displayName = getDisplayName()
+    game:GetService("StarterGui"):SetCore("SendNotification",{
         Title = "Aetherial Hub";
-        Text = "Script could not load because Drawing API is not available.";
-        Duration = math.huge;
-        Button1 = "OK"
-    })
-
-    return
-end
-
-local Find_Required = API_Check()
-
-if Find_Required == "No" then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Aetherial Hub";
-        Text = "Script could not load because of your executor.";
+        Text = "Script could not load because Drawing API is not available for user: " .. displayName;
         Duration = math.huge;
         Button1 = "OK"
     })
@@ -67,7 +61,6 @@ local function CreateESP()
             local TracerLine = Drawing.new("Line")
             local OuterGlow = Drawing.new("Square")
             local BodyFill = Drawing.new("Square")
-            local NameLabel = Drawing.new("Text")
 
             RunService.RenderStepped:Connect(function()
                 if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
@@ -121,35 +114,23 @@ local function CreateESP()
                                 BodyFill.Transparency = 0.5
                                 BodyFill.Size = Vector2.new(28, 58)
                                 BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
-                                
-                                -- Update Name Label
-                                NameLabel.Visible = true
-                                NameLabel.Text = v.Name
-                                NameLabel.Size = 20
-                                NameLabel.Color = Color3.fromRGB(255, 255, 255)
-                                NameLabel.Center = true
-                                NameLabel.Position = Vector2.new(HRP_Vector.X, HRP_Vector.Y - 35)  -- Adjust the position as needed
                             else
                                 OuterGlow.Visible = false
                                 BodyFill.Visible = false
-                                NameLabel.Visible = false
                             end
                         else
                             OuterGlow.Visible = false
                             BodyFill.Visible = false
-                            NameLabel.Visible = false
                         end
                     else
                         TracerLine.Visible = false
                         OuterGlow.Visible = false
                         BodyFill.Visible = false
-                        NameLabel.Visible = false
                     end
                 else
                     TracerLine.Visible = false
                     OuterGlow.Visible = false
                     BodyFill.Visible = false
-                    NameLabel.Visible = false
                 end
             end)
 
@@ -157,7 +138,6 @@ local function CreateESP()
                 TracerLine.Visible = false
                 OuterGlow.Visible = false
                 BodyFill.Visible = false
-                NameLabel.Visible = false
             end)
         end
     end
@@ -168,7 +148,6 @@ local function CreateESP()
                 local TracerLine = Drawing.new("Line")
                 local OuterGlow = Drawing.new("Square")
                 local BodyFill = Drawing.new("Square")
-                local NameLabel = Drawing.new("Text")
 
                 RunService.RenderStepped:Connect(function()
                     if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
@@ -222,35 +201,23 @@ local function CreateESP()
                                     BodyFill.Transparency = 0.5
                                     BodyFill.Size = Vector2.new(28, 58)
                                     BodyFill.Position = Vector2.new(HRP_Vector.X - BodyFill.Size.X / 2, HRP_Vector.Y - BodyFill.Size.Y / 2)
-                                    
-                                    -- Update Name Label
-                                    NameLabel.Visible = true
-                                    NameLabel.Text = v.Name
-                                    NameLabel.Size = 20
-                                    NameLabel.Color = Color3.fromRGB(255, 255, 255)
-                                    NameLabel.Center = true
-                                    NameLabel.Position = Vector2.new(HRP_Vector.X, HRP_Vector.Y - 35)  -- Adjust the position as needed
                                 else
                                     OuterGlow.Visible = false
                                     BodyFill.Visible = false
-                                    NameLabel.Visible = false
                                 end
                             else
                                 OuterGlow.Visible = false
                                 BodyFill.Visible = false
-                                NameLabel.Visible = false
                             end
                         else
                             TracerLine.Visible = false
                             OuterGlow.Visible = false
                             BodyFill.Visible = false
-                            NameLabel.Visible = false
                         end
                     else
                         TracerLine.Visible = false
                         OuterGlow.Visible = false
                         BodyFill.Visible = false
-                        NameLabel.Visible = false
                     end
                 end)
 
@@ -258,11 +225,17 @@ local function CreateESP()
                     TracerLine.Visible = false
                     OuterGlow.Visible = false
                     BodyFill.Visible = false
-                    NameLabel.Visible = false
                 end)
             end
         end)
-    end
+    end)
 end
 
 CreateESP()
+
+-- Key bindings to manage ESP toggle and settings
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == _G.DisableKey then
+        TracersEnabled = not TracersEnabled
+    end
+end)
