@@ -336,31 +336,34 @@ game:GetService("Players").PlayerAdded:Connect(function(Player)
    end)
 end)
 
--- New function to toggle ESP
-local function ToggleESP()
-    ESPEnabled = not ESPEnabled
-   
-    -- Toggle visibility for all ESP elements
-    for _, v in pairs(game:GetService("Players"):GetPlayers()) do
-        if v.Name ~= player.Name and v.Character then
-            Visibility(ESPEnabled, v.Character)
+-- Modify the ToggleESP function
+    local function ToggleESP()
+        ESPEnabled = not ESPEnabled
+       
+        -- Toggle visibility for all ESP elements
+        for _, v in pairs(game:GetService("Players"):GetPlayers()) do
+            if v.Name ~= player.Name and v.Character then
+                Visibility(ESPEnabled, v.Character)
+            end
         end
-    end
-   
-    -- Toggle outline visibility
-    for _, highlight in pairs(Folder:GetChildren()) do
-        if highlight:IsA("Highlight") then
-            highlight.Enabled = ESPEnabled
+       
+        -- Toggle outline visibility
+        for _, highlight in pairs(Folder:GetChildren()) do
+            if highlight:IsA("Highlight") then
+                highlight.Enabled = ESPEnabled
+            end
         end
-    end
-   
-    -- Toggle nametag visibility
-    for _, billboardGui in pairs(Folder:GetChildren()) do
-        if billboardGui:IsA("BillboardGui") then
-            billboardGui.Enabled = ESPEnabled
+       
+        -- Toggle nametag visibility
+        for _, billboardGui in pairs(Folder:GetChildren()) do
+            if billboardGui:IsA("BillboardGui") then
+                billboardGui.Enabled = ESPEnabled
+            end
         end
+    
+        -- Update button text
+        ToggleButton.Text = ESPEnabled and "Disable ESP" or "Enable ESP"
     end
-end
-
--- Connect the ToggleESP function to the button
-ToggleButton.MouseButton1Click:Connect(ToggleESP)
+    
+    -- Connect the ToggleESP function to the button
+    ToggleButton.MouseButton1Click:Connect(ToggleESP)
