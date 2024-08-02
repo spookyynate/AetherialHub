@@ -7,11 +7,13 @@ local Settings = {
     Tracer_FollowMouse = false,
     Tracers = true
 }
+
 local Team_Check = {
     TeamCheck = false,
     Green = Color3.fromRGB(0, 255, 0),
     Red = Color3.fromRGB(255, 0, 0)
 }
+
 local TeamColor = true
 
 local player = game:GetService("Players").LocalPlayer
@@ -32,18 +34,12 @@ local function NewQuad(thickness, color)
     return quad
 end
 
-local function NewOutline(thickness, color)
-    local outline = NewQuad(thickness, color)
-    outline.Thickness = thickness
-    return outline
-end
-
 local function NewLine(thickness, color)
     local line = Drawing.new("Line")
     line.Visible = false
     line.From = Vector2.new(0, 0)
     line.To = Vector2.new(0, 0)
-    line.Color = color 
+    line.Color = color
     line.Thickness = thickness
     line.Transparency = 1
     return line
@@ -59,18 +55,19 @@ local function ToColor3(col)
     local r = col.r
     local g = col.g
     local b = col.b
-    return Color3.new(r,g,b);
+    return Color3.new(r,g,b)
 end
 
 local black = Color3.fromRGB(0, 0 ,0)
-local white = Color3.fromRGB(255, 255, 255) -- White color for outline
+local white = Color3.fromRGB(255, 255, 255)
+
 local function ESP(plr)
     local library = {
         blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
         tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
-        outline = NewOutline(Settings.Box_Thickness + 2, white) -- Create the white outline
+        outline = NewQuad(Settings.Box_Thickness + 2, white),
     }
 
     local function Colorize(color)
@@ -89,7 +86,7 @@ local function ESP(plr)
                 if OnScreen then
                     local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
                     local DistanceY = math.clamp((Vector2.new(head.X, head.Y) - Vector2.new(HumPos.X, HumPos.Y)).magnitude, 2, math.huge)
-                    
+                   
                     local function Size(item)
                         item.PointA = Vector2.new(HumPos.X + DistanceY, HumPos.Y - DistanceY*2)
                         item.PointB = Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2)
@@ -98,14 +95,14 @@ local function ESP(plr)
                     end
                     Size(library.box)
                     Size(library.black)
-                    Size(library.outline) -- Set size for the outline
+                    Size(library.outline)
 
                     if Settings.Tracers then
                         if Settings.Tracer_Origin == "Middle" then
                             library.tracer.From = camera.ViewportSize*0.5
                             library.blacktracer.From = camera.ViewportSize*0.5
                         elseif Settings.Tracer_Origin == "Bottom" then
-                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y) 
+                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
                             library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
                         end
                         if Settings.Tracer_FollowMouse then
@@ -114,20 +111,20 @@ local function ESP(plr)
                         end
                         library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
                         library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                    else 
+                    else
                         library.tracer.From = Vector2.new(0, 0)
                         library.blacktracer.From = Vector2.new(0, 0)
                         library.tracer.To = Vector2.new(0, 0)
-                        library.blacktracer.To = Vector2.new(0, 02)
+                        library.blacktracer.To = Vector2.new(0, 0)
                     end
 
                     if Team_Check.TeamCheck then
                         if plr.TeamColor == player.TeamColor then
                             Colorize(Team_Check.Green)
-                        else 
+                        else
                             Colorize(Team_Check.Red)
                         end
-                    else 
+                    else
                         library.tracer.Color = Settings.Tracer_Color
                         library.box.Color = Settings.Box_Color
                     end
@@ -135,10 +132,10 @@ local function ESP(plr)
                         Colorize(plr.TeamColor.Color)
                     end
                     Visibility(true, library)
-                else 
+                else
                     Visibility(false, library)
                 end
-            else 
+            else
                 Visibility(false, library)
                 if game.Players:FindFirstChild(plr.Name) == nil then
                     connection:Disconnect()
