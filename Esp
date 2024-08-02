@@ -54,7 +54,7 @@ local function ESP(plr)
     local library = {
         --// Tracer and Black Tracer (black border)
         blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
-        tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
+        tracer = NewLine(Settings.Tracer_Thickness, Color3.fromRGB(255, 0, 0)), -- Red color
         --// Box and Black Box (black border)
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
