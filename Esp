@@ -6,9 +6,8 @@ local Settings = {
     Tracer_Origin = "Bottom",
     Tracer_FollowMouse = false,
     Tracers = true,
-    Glow_Color = Color3.fromRGB(255, 255, 255),
-    Glow_Thickness = 3,
-    Glow_Transparency = 0.5
+    Outline_Color = Color3.fromRGB(255, 255, 255),
+    Outline_Thickness = 3
 }
 
 local Team_Check = {
@@ -48,17 +47,6 @@ local function NewLine(thickness, color)
     return line
 end
 
-local function NewCircle(thickness, color)
-    local circle = Drawing.new("Circle")
-    circle.Visible = false
-    circle.Color = color
-    circle.Thickness = thickness
-    circle.NumSides = 64
-    circle.Filled = false
-    circle.Transparency = Settings.Glow_Transparency
-    return circle
-end
-
 local function Visibility(state, lib)
     for u, x in pairs(lib) do
         x.Visible = state
@@ -72,12 +60,12 @@ local function ESP(plr)
         tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
-        glow = NewCircle(Settings.Glow_Thickness, Settings.Glow_Color)
+        outline = NewQuad(Settings.Outline_Thickness, Settings.Outline_Color)
     }
 
     local function Colorize(color)
         for u, x in pairs(library) do
-            if x ~= library.blacktracer and x ~= library.black then
+            if x ~= library.blacktracer and x ~= library.black and x ~= library.outline then
                 x.Color = color
             end
         end
@@ -100,9 +88,13 @@ local function ESP(plr)
                     end
                     Size(library.box)
                     Size(library.black)
-
-                    library.glow.Position = Vector2.new(HumPos.X, HumPos.Y)
-                    library.glow.Radius = DistanceY * 2.5
+                    
+                    -- Size the outline slightly larger than the box
+                    local outlineOffset = 2
+                    library.outline.PointA = Vector2.new(HumPos.X + DistanceY + outlineOffset, HumPos.Y - DistanceY*2 - outlineOffset)
+                    library.outline.PointB = Vector2.new(HumPos.X - DistanceY - outlineOffset, HumPos.Y - DistanceY*2 - outlineOffset)
+                    library.outline.PointC = Vector2.new(HumPos.X - DistanceY - outlineOffset, HumPos.Y + DistanceY*2 + outlineOffset)
+                    library.outline.PointD = Vector2.new(HumPos.X + DistanceY + outlineOffset, HumPos.Y + DistanceY*2 + outlineOffset)
 
                     if Settings.Tracers then
                         if Settings.Tracer_Origin == "Middle" then
@@ -122,7 +114,7 @@ local function ESP(plr)
                         library.tracer.From = Vector2.new(0, 0)
                         library.blacktracer.From = Vector2.new(0, 0)
                         library.tracer.To = Vector2.new(0, 0)
-                        library.blacktracer.To = Vector2.new(0, 02)
+                        library.blacktracer.To = Vector2.new(0, 0)
                     end
 
                     if Team_Check.TeamCheck then
