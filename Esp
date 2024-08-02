@@ -5,35 +5,18 @@ local Settings = {
     Box_Thickness = 1,
     Tracer_Origin = "Bottom",
     Tracer_FollowMouse = false,
-    Tracers = true,
-    Outline_Color = Color3.fromRGB(255, 255, 255),
-    Outline_Thickness = 3
+    Tracers = true
 }
-
 local Team_Check = {
     TeamCheck = false,
     Green = Color3.fromRGB(0, 255, 0),
     Red = Color3.fromRGB(255, 0, 0)
 }
-
 local TeamColor = true
 
 local player = game:GetService("Players").LocalPlayer
 local camera = game:GetService("Workspace").CurrentCamera
 local mouse = player:GetMouse()
-
--- Outline settings
-local Outlines = true
-local OutlineColoring = Settings.Outline_Color
-local OutlineFill = false
-local FillOpacity = 1
-local FillColoring = Color3.fromRGB(255, 255, 255)
-
--- Name tag settings
-local NameTags = true
-local TextFont = Enum.Font.RobotoMono
-local NameColor = Color3.fromRGB(255, 255, 255)
-local NamePositioning = false
 
 local function NewQuad(thickness, color)
     local quad = Drawing.new("Quad")
@@ -54,7 +37,7 @@ local function NewLine(thickness, color)
     line.Visible = false
     line.From = Vector2.new(0, 0)
     line.To = Vector2.new(0, 0)
-    line.Color = color
+    line.Color = color 
     line.Thickness = thickness
     line.Transparency = 1
     return line
@@ -66,44 +49,25 @@ local function Visibility(state, lib)
     end
 end
 
+local function ToColor3(col)
+    local r = col.r
+    local g = col.g
+    local b = col.b
+    return Color3.new(r,g,b);
+end
+
 local black = Color3.fromRGB(0, 0 ,0)
-
--- Add outline and name tag functions
-local function AddOutline(Character)
-    local highlight = Drawing.new("Quad")
-    highlight.Visible = true
-    highlight.Color = OutlineColoring
-    highlight.Thickness = Settings.Outline_Thickness
-    highlight.Transparency = 1
-    -- Update the highlight position and size here if needed
-    -- Note: Drawing API might not directly support highlighting
-end
-
-local function AddNameTag(Character)
-    local head = Character:FindFirstChild("Head")
-    if head then
-        local nameTag = Drawing.new("Text")
-        nameTag.Text = Character.Name
-        nameTag.Visible = true
-        nameTag.Color = NameColor
-        nameTag.Font = TextFont
-        nameTag.Size = 20 -- Adjust size if needed
-        nameTag.Position = Vector2.new(head.Position.X, head.Position.Y) -- Adjust position if needed
-    end
-end
-
 local function ESP(plr)
     local library = {
         blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
         tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
-        outline = NewQuad(Settings.Outline_Thickness, Settings.Outline_Color)
     }
 
     local function Colorize(color)
         for u, x in pairs(library) do
-            if x ~= library.blacktracer and x ~= library.black and x ~= library.outline then
+            if x ~= library.blacktracer and x ~= library.black then
                 x.Color = color
             end
         end
@@ -112,12 +76,12 @@ local function ESP(plr)
     local function Updater()
         local connection
         connection = game:GetService("RunService").RenderStepped:Connect(function()
-            if plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") then
+            if plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") ~= nil and plr.Character:FindFirstChild("HumanoidRootPart") ~= nil and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") ~= nil then
                 local HumPos, OnScreen = camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
                 if OnScreen then
                     local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
                     local DistanceY = math.clamp((Vector2.new(head.X, head.Y) - Vector2.new(HumPos.X, HumPos.Y)).magnitude, 2, math.huge)
-                   
+                    
                     local function Size(item)
                         item.PointA = Vector2.new(HumPos.X + DistanceY, HumPos.Y - DistanceY*2)
                         item.PointB = Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2)
@@ -126,20 +90,14 @@ local function ESP(plr)
                     end
                     Size(library.box)
                     Size(library.black)
-                    
-                    -- Size the outline slightly larger than the box
-                    local outlineOffset = 2
-                    library.outline.PointA = Vector2.new(HumPos.X + DistanceY + outlineOffset, HumPos.Y - DistanceY*2 - outlineOffset)
-                    library.outline.PointB = Vector2.new(HumPos.X - DistanceY - outlineOffset, HumPos.Y - DistanceY*2 - outlineOffset)
-                    library.outline.PointC = Vector2.new(HumPos.X - DistanceY - outlineOffset, HumPos.Y + DistanceY*2 + outlineOffset)
-                    library.outline.PointD = Vector2.new(HumPos.X + DistanceY + outlineOffset, HumPos.Y + DistanceY*2 + outlineOffset)
+
 
                     if Settings.Tracers then
                         if Settings.Tracer_Origin == "Middle" then
                             library.tracer.From = camera.ViewportSize*0.5
                             library.blacktracer.From = camera.ViewportSize*0.5
                         elseif Settings.Tracer_Origin == "Bottom" then
-                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
+                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y) 
                             library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
                         end
                         if Settings.Tracer_FollowMouse then
@@ -148,20 +106,20 @@ local function ESP(plr)
                         end
                         library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
                         library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                    else
+                    else 
                         library.tracer.From = Vector2.new(0, 0)
                         library.blacktracer.From = Vector2.new(0, 0)
                         library.tracer.To = Vector2.new(0, 0)
-                        library.blacktracer.To = Vector2.new(0, 0)
+                        library.blacktracer.To = Vector2.new(0, 02)
                     end
 
                     if Team_Check.TeamCheck then
                         if plr.TeamColor == player.TeamColor then
                             Colorize(Team_Check.Green)
-                        else
+                        else 
                             Colorize(Team_Check.Red)
                         end
-                    else
+                    else 
                         library.tracer.Color = Settings.Tracer_Color
                         library.box.Color = Settings.Box_Color
                     end
@@ -169,16 +127,10 @@ local function ESP(plr)
                         Colorize(plr.TeamColor.Color)
                     end
                     Visibility(true, library)
-                    if Outlines then
-                        AddOutline(plr.Character)
-                    end
-                    if NameTags then
-                        AddNameTag(plr.Character)
-                    end
-                else
+                else 
                     Visibility(false, library)
                 end
-            else
+            else 
                 Visibility(false, library)
                 if game.Players:FindFirstChild(plr.Name) == nil then
                     connection:Disconnect()
