@@ -2,32 +2,8 @@
 local Luxtl = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Luxware-UI-Library/main/Source.lua"))()
 local Luxt = Luxtl.CreateWindow("Wisteria GUI", 6105620301)
 
--- Create Tabs
-local homeTab = Luxt:Tab("Home")
+-- Create ESP Tab
 local espTab = Luxt:Tab("ESP")
-local creditsTab = Luxt:Tab("Credits")
-
--- Home Tab
-local homeSection = homeTab:Section("Welcome")
-homeSection:Label("Welcome to Wisteria GUI")
-homeSection:Button("TextButton Text", function()
-    print("Clicked!")
-end)
-homeSection:Toggle("Toggle Me!", function(isToggled)
-    print(isToggled) -- prints true or false
-end)
-homeSection:KeyBind("Print('Hey') on bind", Enum.KeyCode.R, function() --Enum.KeyCode.R is starting Key
-    print('Hey')
-end)
-homeSection:TextBox("TextBox Info", "Epic PlaceHolder", function(getText)
-    print(getText) -- Prints whatever player types
-end)
-homeSection:Slider("WalkSpeed", 16, 503, function(currentValue)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = currentValue 
-end)
-homeSection:DropDown("Favorite Food?", {"Pizza", "Burger", "Sandwiches"}, function(food) -- food is chosen item
-    print(food)
-end)
 
 -- ESP Tab
 local espSection = espTab:Section("ESP Settings")
@@ -45,15 +21,6 @@ espSection:Slider("Box Thickness", 1, 10, function(thickness)
 end)
 espSection:Slider("Tracer Thickness", 1, 10, function(thickness)
     Settings.Tracer_Thickness = thickness
-end)
-espSection:Dropdown("Tracer Origin", {"Bottom", "Middle"}, function(origin)
-    Settings.Tracer_Origin = origin
-end)
-espSection:Toggle("Tracer Follow Mouse", false, function(isFollow)
-    Settings.Tracer_FollowMouse = isFollow
-end)
-espSection:Toggle("Team Check", false, function(isEnabled)
-    Team_Check.TeamCheck = isEnabled
 end)
 
 -- Credits Tab
