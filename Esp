@@ -7,20 +7,18 @@ local espTab = Luxt:Tab("ESP")
 
 -- ESP Tab
 local espSection = espTab:Section("ESP Settings")
-espSection:Toggle("Enable ESP", true, function(isEnabled)
+espSection:Toggle("Enable ESP", false, function(isEnabled)
     Settings.Tracers = isEnabled
-end)
-espSection:ColorPicker("Box Color", Settings.Box_Color, function(color)
-    Settings.Box_Color = color
-end)
-espSection:ColorPicker("Tracer Color", Settings.Tracer_Color, function(color)
-    Settings.Tracer_Color = color
-end)
-espSection:Slider("Box Thickness", 1, 10, function(thickness)
-    Settings.Box_Thickness = thickness
-end)
-espSection:Slider("Tracer Thickness", 1, 10, function(thickness)
-    Settings.Tracer_Thickness = thickness
+    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= game:GetService("Players").LocalPlayer then
+            if isEnabled then
+                coroutine.wrap(ESP)(player)
+            else
+                -- Disable ESP for the player
+                -- You might need to implement a way to remove the ESP drawings
+            end
+        end
+    end
 end)
 
 -- Credits Tab
