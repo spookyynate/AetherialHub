@@ -5,7 +5,10 @@ local Settings = {
     Box_Thickness = 1,
     Tracer_Origin = "Bottom",
     Tracer_FollowMouse = false,
-    Tracers = true
+    Tracers = true,
+    Glow_Color = Color3.fromRGB(255, 255, 255),
+    Glow_Thickness = 3,
+    Glow_Transparency = 0.5
 }
 
 local Team_Check = {
@@ -45,34 +48,36 @@ local function NewLine(thickness, color)
     return line
 end
 
+local function NewCircle(thickness, color)
+    local circle = Drawing.new("Circle")
+    circle.Visible = false
+    circle.Color = color
+    circle.Thickness = thickness
+    circle.NumSides = 64
+    circle.Filled = false
+    circle.Transparency = Settings.Glow_Transparency
+    return circle
+end
+
 local function Visibility(state, lib)
     for u, x in pairs(lib) do
         x.Visible = state
     end
 end
 
-local function ToColor3(col)
-    local r = col.r
-    local g = col.g
-    local b = col.b
-    return Color3.new(r,g,b)
-end
-
 local black = Color3.fromRGB(0, 0 ,0)
-local white = Color3.fromRGB(255, 255, 255)
-
 local function ESP(plr)
     local library = {
         blacktracer = NewLine(Settings.Tracer_Thickness*2, black),
         tracer = NewLine(Settings.Tracer_Thickness, Settings.Tracer_Color),
         black = NewQuad(Settings.Box_Thickness*2, black),
         box = NewQuad(Settings.Box_Thickness, Settings.Box_Color),
-        outline = NewQuad(Settings.Box_Thickness + 2, white),
+        glow = NewCircle(Settings.Glow_Thickness, Settings.Glow_Color)
     }
 
     local function Colorize(color)
         for u, x in pairs(library) do
-            if x ~= library.blacktracer and x ~= library.black and x ~= library.outline then
+            if x ~= library.blacktracer and x ~= library.black then
                 x.Color = color
             end
         end
@@ -95,7 +100,9 @@ local function ESP(plr)
                     end
                     Size(library.box)
                     Size(library.black)
-                    Size(library.outline)
+
+                    library.glow.Position = Vector2.new(HumPos.X, HumPos.Y)
+                    library.glow.Radius = DistanceY * 2.5
 
                     if Settings.Tracers then
                         if Settings.Tracer_Origin == "Middle" then
@@ -115,7 +122,7 @@ local function ESP(plr)
                         library.tracer.From = Vector2.new(0, 0)
                         library.blacktracer.From = Vector2.new(0, 0)
                         library.tracer.To = Vector2.new(0, 0)
-                        library.blacktracer.To = Vector2.new(0, 0)
+                        library.blacktracer.To = Vector2.new(0, 02)
                     end
 
                     if Team_Check.TeamCheck then
