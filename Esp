@@ -1,3 +1,48 @@
+-- Load Luxware UI Library
+local Luxtl = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Luxware-UI-Library/main/Source.lua"))()
+
+-- Create the Luxware Window
+local Luxt = Luxtl.CreateWindow("Wisteria GUI", 6105620301)
+
+-- Create Tabs
+local mainTab = Luxt:Tab("Auto-Farm", 6087485864)
+local teleportsTab = Luxt:Tab("Teleports")
+local autoQTab = Luxt:Tab("Auto-Quest")
+local combatTab = Luxt:Tab("Combat")
+local creditsTab = Luxt:Tab("Credits")
+local Examples = Luxt:Tab("Examples")
+
+-- Credits Section
+local cf = creditsTab:Section("Main Credits")
+cf:Credit("Luxt: Main Coding")
+local cf1 = creditsTab:Section("UI Credits")
+cf1:Credit("xHeptc: UI Library")
+local cf2 = creditsTab:Section("Helping Credits")
+cf2:Credit("Salad: Helping")
+
+-- Examples Section
+local ff = Examples:Section("All Examples")
+ff:Label("Welcome to Wisteria GUI")
+ff:Button("TextButton Text", function()
+    print("Clicked!")
+end)
+ff:Toggle("Toggle ESP", function(isToggled)
+    ToggleESP(isToggled)
+end)
+ff:KeyBind("Print('Hey') on bind", Enum.KeyCode.R, function()
+    print('Hey')
+end)
+ff:TextBox("TextBox Info", "Epic PlaceHolder", function(getText)
+    print(getText)
+end)
+ff:Slider("WalkSpeed", 16, 503, function(currentValue)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = currentValue
+end)
+ff:DropDown("Favorite Food?", {"Pizza", "Burger", "Sandwiches"}, function(food)
+    print(food)
+end)
+
+-- Define Settings, Team Check, and other variables
 local Settings = {
     Box_Color = Color3.fromRGB(255, 0, 0),
     Tracer_Color = Color3.fromRGB(255, 0, 0),
@@ -22,14 +67,6 @@ local mouse = player:GetMouse()
 
 -- New variables for ESP toggle
 local ESPEnabled = true
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 100, 0, 50)
-ToggleButton.Position = UDim2.new(0.9, -50, 0.1, 0)
-ToggleButton.Text = "Toggle ESP"
-ToggleButton.Parent = ScreenGui
 
 local function NewQuad(thickness, color)
     local quad = Drawing.new("Quad")
@@ -176,107 +213,9 @@ local FillColoring = Color3.fromRGB(255, 255, 255)
 local NameTags = true
 local TextFont = Enum.Font.RobotoMono
 local NameColor = Color3.fromRGB(255, 255, 255)
-local NamePositioning = false
 
-local Folder = Instance.new("Folder", game:GetService("CoreGui"))
-Folder.Name = ""
-
-local function AddOutline(Character)
-   local Highlight = Instance.new("Highlight", Folder)
-   
-   Highlight.OutlineColor = OutlineColoring
-   Highlight.Adornee = Character
-   Highlight.Enabled = ESPEnabled
-   
-   if OutlineFill == true then
-       Highlight.FillColor = FillColoring
-       Highlight.FillTransparency = FillOpacity
-   else
-       Highlight.FillTransparency = 1
-   end
+function ToggleESP(toggle)
+    ESPEnabled = toggle
 end
 
-local function AddNameTag(Character)
-   local BGui = Instance.new("BillboardGui", Folder)
-   local Frame = Instance.new("Frame", BGui)
-   local TextLabel = Instance.new("TextLabel", Frame)
-   
-   BGui.Adornee = Character:WaitForChild("Head")
-   BGui.StudsOffset = Vector3.new(0, 3, 0)
-   BGui.AlwaysOnTop = true
-   BGui.Enabled = ESPEnabled
-   
-   BGui.Size = UDim2.new(4, 0, 0.5, 0)
-   Frame.Size = UDim2.new(1, 0, 1, 0)
-   TextLabel.Size = UDim2.new(1, 0, 1, 0)
-   
-   Frame.BackgroundTransparency = 1
-   TextLabel.BackgroundTransparency = 1
-   
-   TextLabel.Text = Character.Name
-   TextLabel.Font = TextFont
-   TextLabel.TextColor3 = NameColor
-   TextLabel.TextScaled = NamePositioning
-end
-
-for i, v in ipairs(game:GetService("Players"):GetPlayers()) do
-   if v ~= game:GetService("Players").LocalPlayer then
-       v.CharacterAdded:Connect(function(Character)
-           if Outlines == true then
-               AddOutline(Character)
-           end
-           if NameTags == true then
-               AddNameTag(Character)
-           end
-       end)
-       
-       if v.Character then
-           if Outlines == true then
-               AddOutline(v.Character)
-           end
-           if NameTags == true then
-               AddNameTag(v.Character)
-           end
-       end
-   end
-end
-
-game:GetService("Players").PlayerAdded:Connect(function(Player)
-   Player.CharacterAdded:Connect(function(Character)
-       if Outlines == true then
-           AddOutline(Character)
-       end
-       if NameTags == true then
-           AddNameTag(Character)
-       end
-   end)
-end)
-
--- New function to toggle ESP
-local function ToggleESP()
-    ESPEnabled = not ESPEnabled
-   
-    -- Toggle visibility for all ESP elements
-    for _, v in pairs(game:GetService("Players"):GetPlayers()) do
-        if v.Name ~= player.Name and v.Character then
-            Visibility(ESPEnabled, v.Character)
-        end
-    end
-   
-    -- Toggle outline visibility
-    for _, highlight in pairs(Folder:GetChildren()) do
-        if highlight:IsA("Highlight") then
-            highlight.Enabled = ESPEnabled
-        end
-    end
-   
-    -- Toggle nametag visibility
-    for _, billboardGui in pairs(Folder:GetChildren()) do
-        if billboardGui:IsA("BillboardGui") then
-            billboardGui.Enabled = ESPEnabled
-        end
-    end
-end
-
--- Connect the ToggleESP function to the button
-ToggleButton.MouseButton1Click:Connect(ToggleESP)
+-- Add additional functionality or settings as needed
